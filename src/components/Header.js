@@ -27,7 +27,6 @@ export default function Header({ toggleSidebar }) {
         >
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
         </button>
-        <button className="login-btn">Log In</button>
       </div>
     </header>
   );

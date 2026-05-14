@@ -1,53 +1,70 @@
 "use client";
 import { useState } from 'react';
+import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 
 export default function RobotsTxtChecker() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [showRaw, setShowRaw] = useState(false);
 
   const handleCheck = async (e) => {
     e.preventDefault();
-    if (!url) return;
-    setLoading(true); setResult(null);
-    await new Promise(r => setTimeout(r, 900));
-    const domain = url.replace(/https?:\/\//, '').split('/')[0];
-    setResult({
-      robotsUrl: `https://${domain}/robots.txt`,
-      found: true,
-      sitemapLines: [`https://${domain}/sitemap.xml`],
-      disallowedPaths: ['/admin/', '/private/', '/checkout/'],
-      allowedPaths: ['/'],
-      crawlDelay: '1',
-      userAgents: ['*', 'Googlebot', 'Bingbot'],
-    });
-    setLoading(false);
+    if (!url.trim()) return;
+
+    setLoading(true);
+    setData(null);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/tools/robots-txt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error || 'Something went wrong.');
+      } else {
+        setData(json);
+      }
+    } catch {
+      setError('Network error — could not reach the checker service.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div>
       <div className="tool-header"><h1>Robots.txt Checker</h1></div>
+
       <div className="tool-card">
         <form className="search-bar" onSubmit={handleCheck}>
-          <input type="url" placeholder="Enter website URL..." className="search-input" value={url} onChange={e => setUrl(e.target.value)} required />
-          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Fetching...' : 'Check Robots.txt'}</button>
+          <input
+            type="text"
+            inputMode="url"
+            placeholder="Enter website URL or domain (e.g. example.com)"
+            className="search-input"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            required
+          />
+          <button type="submit" className="check-btn" disabled={loading}>
+            {loading ? 'Fetching...' : 'Check Robots.txt'}
+          </button>
         </form>
-        <p className="tool-description">Analyze the robots.txt file of any domain to see which paths are blocked from crawling and which sitemaps are declared.</p>
-        {result && (
-          <div className="result-box">
-            <div className="result-score" style={{ color: result.found ? '#10B981' : '#EF4444' }}>
-              {result.found ? '✓ robots.txt Found' : '✗ robots.txt Not Found'}
-            </div>
-            <div className="result-grid">
-              <div className="result-item"><span className="result-label">Robots.txt URL</span><span className="result-value">{result.robotsUrl}</span></div>
-              <div className="result-item"><span className="result-label">User-Agents</span><span className="result-value">{result.userAgents.join(', ')}</span></div>
-              <div className="result-item"><span className="result-label">Disallowed Paths</span><span className="result-value">{result.disallowedPaths.join(', ')}</span></div>
-              <div className="result-item"><span className="result-label">Crawl-Delay</span><span className="result-value">{result.crawlDelay}s</span></div>
-              <div className="result-item"><span className="result-label">Sitemap Declared</span><span className="result-value">{result.sitemapLines[0]}</span></div>
-            </div>
-          </div>
-        )}
+        <p className="tool-description">
+          Fetches <code>/robots.txt</code> from any domain and parses every User-agent group, Allow/Disallow rule,
+          Crawl-delay, and Sitemap declaration.
+        </p>
+
+        {error && <div className="result-error">{error}</div>}
+
+        {data && <ResultBlock data={data} showRaw={showRaw} setShowRaw={setShowRaw} />}
       </div>
+
       <div style={{ marginTop: '4rem' }}>
         <article className="tool-article">
           <h2>Robots.txt: The Complete Guide to Controlling How Search Engines Crawl Your Site</h2>
@@ -72,4 +89,193 @@ export default function RobotsTxtChecker() {
       </div>
     </div>
   );
+}
+
+function ResultBlock({ data, showRaw, setShowRaw }) {
+  let bannerClass, BannerIcon, headline;
+  if (!data.found) {
+    bannerClass = 'warning';
+    BannerIcon = AlertTriangle;
+    headline = data.message || `No robots.txt found (HTTP ${data.httpStatus}).`;
+  } else if (data.summary?.entirelyBlockedForAll) {
+    bannerClass = 'danger';
+    BannerIcon = XCircle;
+    headline = 'Site-wide block detected: Disallow: / for User-agent: *';
+  } else {
+    bannerClass = 'success';
+    BannerIcon = CheckCircle2;
+    headline = `robots.txt found — ${data.groups.length} group${data.groups.length === 1 ? '' : 's'}, ${data.sitemaps.length} sitemap${data.sitemaps.length === 1 ? '' : 's'}.`;
+  }
+
+  return (
+    <div className="result-box">
+      <div className={`result-banner ${bannerClass}`}>
+        <BannerIcon size={20} className="result-banner-icon" />
+        <span>{headline}</span>
+      </div>
+
+      <div>
+        <div className="result-section-title">Overview</div>
+        <div className="result-grid">
+          <ResultRow label="Robots.txt URL" mono>
+            <a href={data.robotsUrl} target="_blank" rel="noreferrer" className="sitemap-link">
+              {data.robotsUrl}
+            </a>
+          </ResultRow>
+          {data.finalUrl && data.finalUrl !== data.robotsUrl && (
+            <ResultRow label="Final URL" mono>{data.finalUrl}</ResultRow>
+          )}
+          <ResultRow label="HTTP Status">
+            <strong>{data.httpStatus}</strong>
+          </ResultRow>
+          {data.contentType && (
+            <ResultRow label="Content-Type">{data.contentType}</ResultRow>
+          )}
+          {data.found && (
+            <ResultRow label="Size">{formatBytes(data.bytes)}</ResultRow>
+          )}
+          {data.found && (
+            <ResultRow label="Distinct User-agents">
+              {data.summary.userAgents.length > 0 ? (
+                <div className="directive-list">
+                  {data.summary.userAgents.map((ua) => (
+                    <span key={ua} className="ua-chip">{ua}</span>
+                  ))}
+                </div>
+              ) : (
+                <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>None declared</span>
+              )}
+            </ResultRow>
+          )}
+        </div>
+      </div>
+
+      {data.found && data.groups.length > 0 && (
+        <div>
+          <div className="result-section-title">User-agent Groups</div>
+          {data.groups.map((g, i) => (
+            <UserAgentGroup key={i} group={g} />
+          ))}
+        </div>
+      )}
+
+      {data.found && (
+        <div>
+          <div className="result-section-title">Sitemaps</div>
+          {data.sitemaps.length > 0 ? (
+            <div className="sitemap-list">
+              {data.sitemaps.map((s) => (
+                <a key={s} href={s} target="_blank" rel="noreferrer" className="sitemap-link">{s}</a>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.875rem' }}>
+              No <code>Sitemap:</code> directive declared in robots.txt.
+            </p>
+          )}
+        </div>
+      )}
+
+      {data.parseErrors && data.parseErrors.length > 0 && (
+        <div className="parse-errors">
+          <strong>Parsing notes ({data.parseErrors.length})</strong>
+          <ul>
+            {data.parseErrors.slice(0, 10).map((e, i) => (
+              <li key={i}>Line {e.line}: {e.message}</li>
+            ))}
+            {data.parseErrors.length > 10 && <li>…and {data.parseErrors.length - 10} more</li>}
+          </ul>
+        </div>
+      )}
+
+      {data.redirectChain && data.redirectChain.length > 1 && (
+        <div>
+          <div className="result-section-title">Redirect Chain</div>
+          <div className="redirect-chain">
+            {data.redirectChain.map((hop, i) => (
+              <div key={`${hop.url}-${i}`} className="redirect-hop">
+                <span className="redirect-hop-status">{hop.status}</span>
+                <span>{hop.url}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {data.found && data.raw && (
+        <div>
+          <div className="result-section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Raw File</span>
+            <button
+              type="button"
+              onClick={() => setShowRaw((v) => !v)}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-secondary)',
+                padding: '0.25rem 0.625rem',
+                borderRadius: '4px',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textTransform: 'none',
+                letterSpacing: 'normal',
+              }}
+            >
+              {showRaw ? 'Hide' : 'Show'}
+            </button>
+          </div>
+          {showRaw && <pre className="raw-pre">{data.raw}</pre>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UserAgentGroup({ group }) {
+  return (
+    <div className="ua-group">
+      <div className="ua-group-header">
+        <strong>User-agent:</strong>
+        {group.agents.map((a) => (
+          <span key={a} className="ua-chip">{a}</span>
+        ))}
+      </div>
+      <div className="ua-rules">
+        {group.rules.length === 0 && (
+          <div className="ua-rule">
+            <span className="ua-rule-path empty">No Allow/Disallow rules.</span>
+          </div>
+        )}
+        {group.rules.map((r, i) => (
+          <div key={i} className="ua-rule">
+            <span className={`ua-rule-tag ${r.type}`}>{r.type}</span>
+            <span className={`ua-rule-path ${r.value ? '' : 'empty'}`}>
+              {r.value || '(empty — allow all)'}
+            </span>
+          </div>
+        ))}
+      </div>
+      {(group.crawlDelay !== null && group.crawlDelay !== undefined) && (
+        <div className="ua-meta">Crawl-delay: {group.crawlDelay}{typeof group.crawlDelay === 'number' ? 's' : ''}</div>
+      )}
+    </div>
+  );
+}
+
+function ResultRow({ label, children, mono = false }) {
+  return (
+    <div className="result-item">
+      <span className="result-label">{label}</span>
+      <span className={`result-value ${mono ? 'result-value-mono' : ''}`}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function formatBytes(n) {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(2)} MB`;
 }

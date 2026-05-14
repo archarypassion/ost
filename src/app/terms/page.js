@@ -1,62 +1,85 @@
-"use client";
+'use client';
+
 import Link from 'next/link';
+import LegalPageShell from '@/components/LegalPageShell';
+import { CONTACT_EMAIL, LEGAL_LAST_UPDATED, SITE_NAME } from '@/lib/tools-catalog';
+
+const mailLegal = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`${SITE_NAME} — terms`)}`;
 
 export default function TermsPage() {
   return (
-    <div className="landing-page">
-      <header className="landing-header">
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <Link href="/" className="logo">
-             <span style={{color: '#4285F4', fontWeight: 500}}>T</span><span style={{color: '#EA4335', fontWeight: 500}}>r</span><span style={{color: '#FBBC05', fontWeight: 500}}>u</span><span style={{color: '#4285F4', fontWeight: 500}}>e</span><span style={{color: '#34A853', fontWeight: 500}}>S</span><span style={{color: '#EA4335', fontWeight: 500}}>e</span><span style={{color: 'var(--text-secondary)', fontWeight: 300}}>o</span>
-          </Link>
-        </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <Link href="/tools/noindex-checker" className="btn-primary">Go to Tools</Link>
-        </div>
-      </header>
+    <LegalPageShell>
+      <article className="tool-article" style={{ width: '100%' }}>
+        <h1>Terms of Service</h1>
+        <p>Last updated: {LEGAL_LAST_UPDATED}</p>
 
-      <main style={{ flex: 1, padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center' }}>
-        <article className="tool-article" style={{ width: '100%' }}>
-          <h2>Terms of Service</h2>
-          <p>Last updated: {new Date().toLocaleDateString()}</p>
-          
-          <h3>1. Terms</h3>
-          <p>By accessing the website at TrueSeo, you are agreeing to be bound by these terms of service, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws. If you do not agree with any of these terms, you are prohibited from using or accessing this site.</p>
-          
-          <h3>2. Use License</h3>
-          <p>Permission is granted to temporarily use the tools on TrueSeo's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
-          <ul>
-            <li>modify or copy the materials;</li>
-            <li>use the materials for any commercial purpose, or for any public display (commercial or non-commercial);</li>
-            <li>attempt to decompile or reverse engineer any software contained on TrueSeo's website;</li>
-            <li>remove any copyright or other proprietary notations from the materials; or</li>
-            <li>transfer the materials to another person or "mirror" the materials on any other server.</li>
-          </ul>
-          <p>This license shall automatically terminate if you violate any of these restrictions and may be terminated by TrueSeo at any time.</p>
+        <p>
+          These terms govern your access to and use of {SITE_NAME}. If you do not agree, do not use
+          the site.
+        </p>
 
-          <h3>3. Disclaimer</h3>
-          <p>The materials on TrueSeo's website are provided on an 'as is' basis. TrueSeo makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
-          <p>Further, TrueSeo does not warrant or make any representations concerning the accuracy, likely results, or reliability of the use of the materials on its website or otherwise relating to such materials or on any sites linked to this site.</p>
+        <h2>1. The service</h2>
+        <p>
+          {SITE_NAME} provides informational tools and reports. Outputs depend on live or cached data
+          from the open web and may be incomplete or outdated. See our{' '}
+          <Link href="/disclaimer" style={{ color: 'var(--accent-color, #1A73E8)' }}>
+            Disclaimer
+          </Link>{' '}
+          for important limitations.
+        </p>
 
-          <h3>4. Limitations</h3>
-          <p>In no event shall TrueSeo or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on TrueSeo's website, even if TrueSeo or a TrueSeo authorized representative has been notified orally or in writing of the possibility of such damage.</p>
+        <h2>2. Acceptable use</h2>
+        <p>You agree not to:</p>
+        <ul>
+          <li>Use the site in any way that violates applicable law;</li>
+          <li>Attempt to disrupt, overload, or reverse engineer the service or its infrastructure;</li>
+          <li>Use automated means to scrape or hammer endpoints in a way that degrades service for others;</li>
+          <li>Submit illegal content or use the tools to harass third parties.</li>
+        </ul>
+        <p>We may suspend or block access when we reasonably believe these rules are being broken.</p>
 
-          <h3>5. Accuracy of materials</h3>
-          <p>The materials appearing on TrueSeo's website could include technical, typographical, or photographic errors. TrueSeo does not warrant that any of the materials on its website are accurate, complete or current. TrueSeo may make changes to the materials contained on its website at any time without notice.</p>
+        <h2>3. Intellectual property</h2>
+        <p>
+          The site layout, branding, text, and software are owned by us or our licensors. You may not
+          copy or redistribute the codebase or substantial parts of the UI without permission, except
+          where allowed by law.
+        </p>
 
-          <h3>6. Modifications</h3>
-          <p>TrueSeo may revise these terms of service for its website at any time without notice. By using this website you are agreeing to be bound by the then current version of these terms of service.</p>
-        </article>
-      </main>
+        <h2>4. Disclaimer of warranties</h2>
+        <p>
+          The service is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo; without warranties
+          of any kind, express or implied, including merchantability, fitness for a particular purpose,
+          and non-infringement, to the fullest extent permitted by law.
+        </p>
 
-      <footer style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-        <div style={{ padding: '15px 30px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '2rem' }}>
-          <Link href="/about" style={{ color: 'inherit' }}>About</Link>
-          <Link href="/privacy" style={{ color: 'inherit' }}>Privacy Policy</Link>
-          <Link href="/terms" style={{ color: 'inherit' }}>Terms of Service</Link>
-          <Link href="/contact" style={{ color: 'inherit' }}>Contact</Link>
-        </div>
-      </footer>
-    </div>
+        <h2>5. Limitation of liability</h2>
+        <p>
+          To the fullest extent permitted by law, {SITE_NAME} and its operators are not liable for any
+          indirect, incidental, special, consequential, or punitive damages, or for any loss of profits,
+          data, or goodwill, arising from your use of the site or reliance on tool output.
+        </p>
+
+        <h2>6. Indemnity</h2>
+        <p>
+          You agree to defend and indemnify us against claims arising from your misuse of the service
+          or violation of these terms, to the extent permitted by law.
+        </p>
+
+        <h2>7. Changes</h2>
+        <p>
+          We may modify these terms at any time. Material changes will be reflected by updating the
+          date above. Your continued use after changes constitutes acceptance of the new terms.
+        </p>
+
+        <h2>8. Contact</h2>
+        <p>
+          Questions about these terms:{' '}
+          <a href={mailLegal} style={{ color: 'var(--accent-color, #1A73E8)' }}>
+            {CONTACT_EMAIL}
+          </a>
+          .
+        </p>
+      </article>
+    </LegalPageShell>
   );
 }

@@ -1,67 +1,195 @@
 "use client";
-
 import { useState } from 'react';
 
-export default function HttpStatusChecker() {
+const KIND_CLASS = { success: 'success', redirect: 'warning', 'client-error': 'danger', 'server-error': 'danger', unknown: 'warning' };
+
+export default function HttpStatusPage() {
+  const [mode, setMode] = useState('single');
   const [url, setUrl] = useState('');
+  const [bulkText, setBulkText] = useState('');
+  const [method, setMethod] = useState('GET');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleCheck = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (!url) return;
-    setLoading(true);
-    setResult(null);
-    await new Promise(r => setTimeout(r, 900));
-    setResult({ status: 200, statusText: 'OK', responseTime: 342, server: 'nginx/1.18', contentType: 'text/html; charset=UTF-8', redirectChain: [] });
-    setLoading(false);
+    setLoading(true); setData(null); setError(null);
+    try {
+      const body = mode === 'bulk'
+        ? { method, urls: bulkText.split(/\r?\n/).map((s) => s.trim()).filter(Boolean) }
+        : { method, url: url.trim() };
+      const res = await fetch('/api/tools/http-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok && !json?.results) {
+        setError(json?.error || `Request failed with status ${res.status}.`);
+        if (json?.finalUrl || json?.url) setData(json);
+      } else setData(json);
+    } catch (err) { setError(err?.message || 'Something went wrong.'); }
+    finally { setLoading(false); }
   };
-
-  const statusColor = (s) => s >= 200 && s < 300 ? '#10B981' : s >= 300 && s < 400 ? '#F59E0B' : '#EF4444';
 
   return (
     <div>
       <div className="tool-header"><h1>HTTP Status Checker</h1></div>
       <div className="tool-card">
-        <form className="search-bar" onSubmit={handleCheck}>
-          <input type="url" placeholder="Enter website URL..." className="search-input" value={url} onChange={e => setUrl(e.target.value)} required />
-          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Checking...' : 'Check Status'}</button>
-        </form>
-        <p className="tool-description">Instantly check the HTTP status code returned by any URL and see if it's accessible, redirecting, or returning an error.</p>
-        {result && (
-          <div className="result-box">
-            <div className="result-score" style={{ color: statusColor(result.status) }}>{result.status} {result.statusText}</div>
-            <div className="result-grid">
-              <div className="result-item"><span className="result-label">Response Time</span><span className="result-value">{result.responseTime}ms</span></div>
-              <div className="result-item"><span className="result-label">Server</span><span className="result-value">{result.server}</span></div>
-              <div className="result-item"><span className="result-label">Content-Type</span><span className="result-value">{result.contentType}</span></div>
-              <div className="result-item"><span className="result-label">Redirect Chain</span><span className="result-value">{result.redirectChain.length === 0 ? 'None' : result.redirectChain.join(' → ')}</span></div>
+        <div className="mode-tabs">
+          <button type="button" className={`mode-tab ${mode === 'single' ? 'active' : ''}`} onClick={() => setMode('single')}>Single URL</button>
+          <button type="button" className={`mode-tab ${mode === 'bulk' ? 'active' : ''}`} onClick={() => setMode('bulk')}>Bulk (up to 25)</button>
+        </div>
+
+        <form onSubmit={submit}>
+          {mode === 'single' ? (
+            <div className="search-bar">
+              <input type="text" placeholder="https://example.com/page" className="search-input" value={url} onChange={(e) => setUrl(e.target.value)} required />
+              <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Checking…' : 'Check Status'}</button>
             </div>
-          </div>
-        )}
+          ) : (
+            <>
+              <textarea className="wc-textarea" placeholder={`https://example.com/\nhttps://example.com/page2\nhttps://example.com/page3`} value={bulkText} onChange={(e) => setBulkText(e.target.value)} required />
+              <button type="submit" className="check-btn" style={{ marginTop: '0.75rem' }} disabled={loading}>{loading ? 'Checking…' : 'Check All'}</button>
+            </>
+          )}
+        </form>
+
+        <div className="kd-options">
+          <label className="kd-top-label">
+            Method:
+            <select value={method} onChange={(e) => setMethod(e.target.value)}>
+              <option value="GET">GET</option>
+              <option value="HEAD">HEAD</option>
+            </select>
+          </label>
+        </div>
+
+        <p className="tool-description">
+          Follow redirects, see every hop’s status code with timing, and inspect the final response&apos;s
+          headers. Bulk mode lets you check up to 25 URLs at once — ideal for verifying redirect maps after
+          a migration.
+        </p>
+
+        {error && <div className="result-error">{error}</div>}
+        {data?.mode === 'single' && <SingleResult d={data} />}
+        {data?.mode === 'bulk' && <BulkResult d={data} />}
       </div>
-      <div style={{ marginTop: '4rem' }}>
-        <article className="tool-article">
-          <h2>HTTP Status Codes: A Practical Guide for SEO Professionals and Developers</h2>
-          <p>Every time a browser or search engine crawler makes a request to a URL, the server responds with a three-digit HTTP status code. These codes are the server's way of communicating the result of that request — whether everything went smoothly, whether the content has moved somewhere else, or whether something has gone badly wrong. Understanding what these codes mean and knowing how to check them quickly is a fundamental skill for anyone involved in technical SEO or web development.</p>
-          <p>The problem is that status codes are invisible to ordinary users. You don't see a "200 OK" message when a page loads successfully — you just see the page. But behind the scenes, that status code determines whether search engines can properly index your content and whether your users are getting the experience you intend for them.</p>
+      <div style={{ marginTop: '4rem' }}><Article /></div>
+    </div>
+  );
+}
 
-          <h3>The 2xx Range: Success</h3>
-          <p>Status codes in the 200-299 range indicate that the request was successful. <strong>200 OK</strong> is what you want to see for every live, indexable page on your site. It means the server found the resource and delivered it without issue. <strong>201 Created</strong> appears when a POST request successfully creates a new resource — common in API responses. <strong>204 No Content</strong> means the request succeeded but there's nothing to return — useful for certain API endpoints but not appropriate for web pages.</p>
+function SingleResult({ d }) {
+  if (d.error) {
+    return (
+      <div className="result-box">
+        <div className="result-banner danger"><strong>{d.error}</strong></div>
+      </div>
+    );
+  }
+  const kind = d.finalKind;
+  return (
+    <div className="result-box">
+      <div className={`result-banner ${KIND_CLASS[kind]}`}>
+        <strong>HTTP {d.finalStatus} {d.finalStatusText}</strong>
+        <span>· {d.method} · {d.totalElapsedMs} ms total · {d.redirectChain.length - 1} redirect{d.redirectChain.length === 2 ? '' : 's'}</span>
+      </div>
+      <div className="result-grid">
+        <div className="result-item"><span className="result-label">Requested URL</span><span className="result-value-mono">{d.url}</span></div>
+        <div className="result-item"><span className="result-label">Final URL</span><span className="result-value-mono">{d.finalUrl}</span></div>
+        <div className="result-item"><span className="result-label">What this means</span><span className="result-value">{d.finalMeaning}</span></div>
+      </div>
 
-          <h3>The 3xx Range: Redirects</h3>
-          <p>Redirects are among the most important status codes to understand from an SEO perspective. <strong>301 Moved Permanently</strong> is the gold standard for SEO-safe redirects. When you move a page to a new URL permanently, a 301 tells search engines to transfer the ranking authority (PageRank) from the old URL to the new one. Google has confirmed that 301 redirects pass the vast majority of link equity. <strong>302 Found</strong> (temporary redirect) should be used only when a move is genuinely temporary — like during A/B testing or seasonal promotions — because search engines are more hesitant to transfer authority through a 302.</p>
+      {d.redirectChain.length > 1 && (
+        <>
+          <h3 className="result-section-title">Redirect chain ({d.redirectChain.length} hops)</h3>
+          <ol className="redirect-chain">
+            {d.redirectChain.map((hop, idx) => (
+              <li key={idx}>
+                <span className={`status-pill kind-${KIND_CLASS[statusKindClient(hop.status)]}`}>HTTP {hop.status}</span>
+                <span className="result-value-mono">{hop.url}</span>
+                <span className="redirect-meta">{hop.elapsedMs} ms{hop.location ? ` → ${hop.location}` : ''}</span>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
 
-          <h3>The 4xx Range: Client Errors</h3>
-          <p><strong>404 Not Found</strong> is the most well-known error code. It means the server couldn't find the requested URL. From an SEO perspective, a handful of 404s is normal and not catastrophic. But a large number of 404s — especially if they were previously ranking pages that lost their redirect — represents real lost value. <strong>403 Forbidden</strong> means the server actively refused the request, usually because access is restricted. Make sure this isn't blocking search engine crawlers from accessing pages you want indexed. <strong>410 Gone</strong> is like a 404, but it explicitly tells crawlers the resource is permanently deleted. Some SEOs prefer 410 over 404 for intentionally removed pages because it signals to Google to drop the URL from the index faster.</p>
-
-          <h3>The 5xx Range: Server Errors</h3>
-          <p><strong>500 Internal Server Error</strong> means something went wrong on the server side — often a misconfigured script, a database failure, or an application crash. From an SEO standpoint, if Googlebot frequently encounters 500 errors on your important pages, it will start visiting them less frequently, reducing your crawl coverage. <strong>503 Service Unavailable</strong> is often used deliberately during planned maintenance. When paired with a Retry-After header, it tells crawlers to come back later rather than penalizing the site for downtime.</p>
-
-          <h3>Why Regular Status Code Auditing Matters</h3>
-          <p>Status codes can change without warning. A plugin update breaks a database connection and suddenly your whole site returns 500 errors. A CMS migration creates thousands of unintended 404s. An overzealous security rule starts returning 403s to legitimate crawlers. These issues can tank your organic traffic rapidly if left undetected. Building a habit of spot-checking critical URLs — especially after deployments or migrations — keeps you ahead of these problems before search engines notice and start devaluing your site's reliability.</p>
-        </article>
+      <h3 className="result-section-title">Final response headers ({d.finalHeaders.length})</h3>
+      <div className="header-list">
+        {d.finalHeaders.map((h, idx) => (
+          <div key={idx} className="header-row">
+            <code className="header-name">{h.name}</code>
+            <span className="header-value">{h.value}</span>
+          </div>
+        ))}
       </div>
     </div>
+  );
+}
+
+function BulkResult({ d }) {
+  return (
+    <div className="result-box">
+      <div className="result-banner success">
+        <strong>{d.count} URL{d.count === 1 ? '' : 's'} checked</strong>
+        <span>
+          {' '}· {d.counts.success || 0} ok · {d.counts.redirect || 0} redirect · {d.counts['client-error'] || 0} 4xx · {d.counts['server-error'] || 0} 5xx · {d.counts.errors || 0} errors
+        </span>
+      </div>
+      <div className="bulk-list">
+        {d.results.map((r, idx) => (
+          <div key={idx} className="bulk-row">
+            {r.error ? (
+              <>
+                <span className="status-pill kind-danger">ERR</span>
+                <span className="result-value-mono">{r.url}</span>
+                <span className="bulk-error">{r.error}</span>
+              </>
+            ) : (
+              <>
+                <span className={`status-pill kind-${KIND_CLASS[r.finalKind]}`}>{r.finalStatus}</span>
+                <span className="result-value-mono">{r.url}</span>
+                <span className="bulk-meta">
+                  {r.totalElapsedMs} ms{r.redirectChain.length > 1 ? ` · ${r.redirectChain.length - 1} redirect${r.redirectChain.length === 2 ? '' : 's'}` : ''}
+                  {r.finalUrl !== r.url ? ` → ${r.finalUrl}` : ''}
+                </span>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function statusKindClient(s) {
+  if (s >= 200 && s < 300) return 'success';
+  if (s >= 300 && s < 400) return 'redirect';
+  if (s >= 400 && s < 500) return 'client-error';
+  if (s >= 500) return 'server-error';
+  return 'unknown';
+}
+
+function Article() {
+  return (
+    <article className="tool-article">
+      <h2>HTTP Status Codes: A Practical Guide</h2>
+      <p>Every web request returns a three-digit status code. They’re invisible to ordinary users but they decide whether search engines can index a page and whether visitors get the experience you intend.</p>
+      <h3>The codes that matter most</h3>
+      <ul>
+        <li><strong>200</strong> — what every live page should return.</li>
+        <li><strong>301</strong> — permanent redirect; passes the vast majority of ranking signals.</li>
+        <li><strong>302 / 307</strong> — temporary; use only when the move is genuinely temporary.</li>
+        <li><strong>308</strong> — permanent redirect that preserves the HTTP method (POST stays POST).</li>
+        <li><strong>404</strong> — a few are normal; many on previously ranking URLs is lost value.</li>
+        <li><strong>410</strong> — explicitly &ldquo;permanently removed&rdquo;; Google drops faster than 404.</li>
+        <li><strong>500 / 502 / 503</strong> — server-side problems; if Googlebot sees them often, crawl rate drops.</li>
+      </ul>
+      <h3>How to use this tool</h3>
+      <p>Single URL mode follows redirects, times each hop, and shows every final response header. Bulk mode lets you paste a list — perfect for sanity-checking a redirect map after a migration. Switch the method to HEAD to test without downloading the body — useful for very large pages.</p>
+    </article>
   );
 }

@@ -1,98 +1,178 @@
 "use client";
-
 import { useState } from 'react';
 
-export default function LinkChecker() {
+const SEV_ICON = { pass: '✓', warn: '!', fail: '✕', info: 'i' };
+const SEV_LABEL = { pass: 'Good', warn: 'Warning', fail: 'Issue', info: 'Info' };
+
+function kindOf(s) {
+  if (!s) return 'unknown';
+  if (s >= 200 && s < 300) return 'success';
+  if (s >= 300 && s < 400) return 'redirect';
+  if (s >= 400 && s < 500) return 'client-error';
+  if (s >= 500) return 'server-error';
+  return 'unknown';
+}
+
+export default function LinkCheckerPage() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('all');
 
-  const handleCheck = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (!url) return;
-    setLoading(true);
-    setResult(null);
-    await new Promise(r => setTimeout(r, 1400));
-    setResult({
-      totalLinks: 47,
-      internalLinks: 32,
-      externalLinks: 15,
-      brokenLinks: 2,
-      nofollowLinks: 5,
-      broken: [
-        { url: 'https://example.com/old-page', status: 404 },
-        { url: 'https://example.com/deleted-resource', status: 410 },
-      ],
-    });
-    setLoading(false);
+    setLoading(true); setData(null); setError(null);
+    try {
+      const res = await fetch('/api/tools/link-checker', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json?.error || `Request failed with status ${res.status}.`);
+        if (json?.finalUrl) setData(json);
+      } else setData(json);
+    } catch (err) { setError(err?.message || 'Something went wrong.'); }
+    finally { setLoading(false); }
   };
 
   return (
     <div>
-      <div className="tool-header">
-        <h1>Link Checker</h1>
-      </div>
-
+      <div className="tool-header"><h1>Broken Link Checker</h1></div>
       <div className="tool-card">
-        <form className="search-bar" onSubmit={handleCheck}>
-          <input type="url" placeholder="Enter website URL..." className="search-input" value={url} onChange={e => setUrl(e.target.value)} required />
-          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Scanning...' : 'Check Links'}</button>
+        <form className="search-bar" onSubmit={submit}>
+          <input type="text" placeholder="https://example.com/blog/post" className="search-input" value={url} onChange={(e) => setUrl(e.target.value)} required />
+          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Crawling links…' : 'Check Links'}</button>
         </form>
-        <p className="tool-description">Scan any webpage for broken links, nofollow links, internal vs. external links, and more.</p>
+        <p className="tool-description">
+          Extract every <code>&lt;a href&gt;</code> on the page and probe each one in parallel. We report
+          status codes, redirects, broken targets, and SEO-relevant attributes (rel, nofollow, target).
+          We check up to 100 unique HTTP links per page.
+        </p>
 
-        {result && (
-          <div className="result-box">
-            <div className="result-grid">
-              <div className="result-item"><span className="result-label">Total Links</span><span className="result-value">{result.totalLinks}</span></div>
-              <div className="result-item"><span className="result-label">Internal Links</span><span className="result-value">{result.internalLinks}</span></div>
-              <div className="result-item"><span className="result-label">External Links</span><span className="result-value">{result.externalLinks}</span></div>
-              <div className="result-item"><span className="result-label">Broken Links</span><span className="result-value" style={{ color: result.brokenLinks > 0 ? '#EF4444' : '#10B981' }}>{result.brokenLinks}</span></div>
-              <div className="result-item"><span className="result-label">Nofollow Links</span><span className="result-value">{result.nofollowLinks}</span></div>
-            </div>
-            {result.broken.length > 0 && (
-              <div style={{ marginTop: '1rem', width: '100%' }}>
-                <h4 style={{ color: '#EF4444', marginBottom: '0.5rem', fontSize: '0.95rem' }}>Broken Links Found:</h4>
-                {result.broken.map((link, i) => (
-                  <div key={i} className="result-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
-                    <span style={{ color: '#EF4444', fontSize: '0.85rem' }}>HTTP {link.status}</span>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', wordBreak: 'break-all' }}>{link.url}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {error && <div className="result-error">{error}</div>}
+        {data && !data.error && <ResultBlock data={data} filter={filter} setFilter={setFilter} />}
       </div>
-
-      <div style={{ marginTop: '4rem' }}>
-        <article className="tool-article">
-          <h2>Link Checker: Why Broken Links Are Silently Killing Your SEO</h2>
-          <p>Broken links are one of those website problems that tend to sneak up on you. You publish a page, everything works perfectly, and then six months later, a resource you linked to has moved, a partner site has restructured their URLs, or you've done an internal migration without proper redirects. Suddenly, visitors and search engines alike are hitting dead ends — and you might not even know it's happening.</p>
-          <p>A link checker is an essential maintenance tool for any website. It's not something you run once and forget — it's something you should build into your regular site health workflow, much like checking your analytics or monitoring your page speed scores.</p>
-
-          <h3>What Counts as a Broken Link?</h3>
-          <p>Most people think of broken links as simple 404 errors — the classic "Page Not Found." And while 404s are the most common, broken links actually encompass a range of HTTP status codes that all signal something has gone wrong. A 410 means the resource is permanently gone. A 500 means the server crashed trying to load it. A timeout means the destination server didn't respond at all. From a user experience and SEO perspective, all of these are problems worth fixing.</p>
-
-          <h3>How Broken Links Affect Your Search Rankings</h3>
-          <p>Search engines like Google follow links to discover and crawl content across the web. When Googlebot encounters a broken link on your page, it wastes a portion of your crawl budget — the finite amount of time and resources Google allocates to crawling your site. If your site has many broken links, Google might crawl fewer of your important pages, causing them to be indexed less frequently or not at all.</p>
-          <p>Beyond crawl budget, broken links damage the user experience. When visitors click a link and land on a 404 page, they often leave the site entirely. This increases your bounce rate and reduces the time users spend engaging with your content — both signals that can negatively influence how search engines perceive your site's quality over time.</p>
-
-          <h3>Internal vs. External Broken Links: Which Is Worse?</h3>
-          <p>Both types hurt, but they hurt differently. Internal broken links — links between your own pages — are fully within your control and arguably more damaging because they disrupt the flow of PageRank (ranking authority) between your own pages. If you have a popular blog post linking to a service page that no longer exists, you're wasting hard-earned authority that should be strengthening your conversion-focused pages.</p>
-          <p>External broken links point to third-party resources you don't control. They make your content look outdated and poorly maintained. If you referenced a study or a tool that has since disappeared, it undermines your credibility. A regular link audit helps you catch these before readers or search engines do.</p>
-
-          <h3>The Difference Between Nofollow and Dofollow Links</h3>
-          <p>Every link on your site is either "followed" or "nofollowed." A standard link passes authority (PageRank) from your page to the destination. A link with the <code>rel="nofollow"</code> attribute signals to search engines not to follow the link and not to pass authority to the destination.</p>
-          <p>Nofollow links are appropriate for paid placements, user-generated content (like blog comments), and any links where you don't want to vouch for the destination. Using nofollow correctly keeps your link profile clean and prevents you from inadvertently passing authority to low-quality sites.</p>
-
-          <h3>How to Fix Broken Links</h3>
-          <p>The fix depends on the cause. For internal broken links, you have two options: update the link to point to the correct current URL, or set up a proper 301 redirect from the old URL to the new one. For external broken links, you can either remove the link, find an alternative resource to link to instead, or use the Wayback Machine to locate an archived version of the resource and link to that.</p>
-          <p>The important thing is to not just delete links without replacing them when possible. Every link is an opportunity to add value for your readers and to pass equity to relevant resources. Fixing or updating is almost always better than simply removing.</p>
-
-          <h3>Building a Regular Link Audit Habit</h3>
-          <p>The most effective way to stay on top of broken links is to run a scan on a scheduled basis — monthly for larger sites, quarterly for smaller ones. Pay special attention after any major site migration, CMS update, or URL restructuring. These events are the most common causes of sudden link breakage. Our Link Checker makes this process fast and painless — just enter your URL and get a full breakdown in seconds.</p>
-        </article>
-      </div>
+      <div style={{ marginTop: '4rem' }}><Article /></div>
     </div>
+  );
+}
+
+function ResultBlock({ data, filter, setFilter }) {
+  const { counts, links, nonHttp, issues, summary } = data;
+  const banner = summary.fail ? 'danger' : summary.warn ? 'warning' : 'success';
+  const filtered = links.filter((l) => {
+    if (filter === 'all') return true;
+    if (filter === 'broken') return l.error || (l.status && l.status >= 400);
+    if (filter === 'redirect') return l.status >= 300 && l.status < 400;
+    if (filter === 'internal') return l.internal === true;
+    if (filter === 'external') return l.internal === false;
+    return true;
+  });
+
+  return (
+    <div className="result-box">
+      <div className={`result-banner ${banner}`}>
+        <strong>
+          {counts.broken + counts.errors > 0
+            ? `${counts.broken + counts.errors} link${counts.broken + counts.errors === 1 ? '' : 's'} need attention`
+            : `All ${counts.http} HTTP link${counts.http === 1 ? '' : 's'} look healthy`}
+        </strong>
+        <span>· {counts.ok} ok · {counts.redirected} redirected · {counts.broken} broken · {counts.errors} errors</span>
+      </div>
+
+      <h3 className="result-section-title">Links found</h3>
+      <div className="wc-grid">
+        <Stat label="Total" value={counts.total} highlight />
+        <Stat label="HTTP/HTTPS" value={counts.http} />
+        <Stat label="Internal" value={counts.internal} />
+        <Stat label="External" value={counts.external} />
+        <Stat label="Email / Tel / Anchor" value={counts.nonHttp} />
+        <Stat label="External nofollow" value={counts.noFollowExternal} />
+      </div>
+
+      {counts.truncated && <div className="result-warning">Showing first 100 unique HTTP links — page contains more. Use a desktop crawler for full audits.</div>}
+
+      <h3 className="result-section-title">Findings</h3>
+      <ul className="og-check-list">
+        {issues.map((c, idx) => (
+          <li key={idx} className={`og-check-row sev-${c.severity}`}>
+            <span className={`og-check-icon sev-${c.severity}`}>{SEV_ICON[c.severity]}</span>
+            <div className="og-check-body">
+              <div className="og-check-head"><span className={`og-check-label sev-${c.severity}`}>{SEV_LABEL[c.severity]}</span></div>
+              <div className="og-check-message">{c.message}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="ps-resources-head">
+        <h3 className="result-section-title" style={{ marginBottom: 0 }}>HTTP links ({filtered.length})</h3>
+        <div className="og-tabs" style={{ marginBottom: 0 }}>
+          {[['all', 'All'], ['broken', 'Broken'], ['redirect', 'Redirects'], ['internal', 'Internal'], ['external', 'External']].map(([k, label]) => (
+            <button key={k} type="button" className={`og-tab ${filter === k ? 'active' : ''}`} onClick={() => setFilter(k)}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="ps-resource-list">
+        {filtered.map((l, idx) => (
+          <div key={idx} className="lc-row">
+            <span className={`status-pill kind-${kindOf(l.status)}`}>{l.error ? 'ERR' : (l.status || '—')}</span>
+            <span className="lc-internal-tag">{l.internal ? 'internal' : 'external'}</span>
+            <div className="lc-link-body">
+              <span className="lc-link-text">{l.text || <em>(no anchor text)</em>}</span>
+              <a href={l.absoluteUrl} className="result-value-mono lc-link-url" target="_blank" rel="noopener noreferrer">{l.absoluteUrl}</a>
+              <div className="lc-link-meta">
+                {l.redirected && <span>→ {l.finalUrl}</span>}
+                {l.rel && <span> · rel=&quot;{l.rel}&quot;</span>}
+                {l.target && <span> · target=&quot;{l.target}&quot;</span>}
+                {l.error && <span className="bulk-error" style={{ paddingLeft: 0 }}> · {l.error}</span>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {nonHttp.length > 0 && (
+        <>
+          <h3 className="result-section-title">Non-HTTP links ({nonHttp.length})</h3>
+          <div className="ps-resource-list">
+            {nonHttp.slice(0, 30).map((l, idx) => (
+              <div key={idx} className="lc-row">
+                <span className="ps-resource-type" style={{ background: '#9ca3af20', color: '#6b7280' }}>{l.kind}</span>
+                <div className="lc-link-body">
+                  <span className="lc-link-text">{l.text || <em>(no anchor text)</em>}</span>
+                  <span className="result-value-mono lc-link-url">{l.href}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value, highlight }) {
+  return (
+    <div className={`wc-stat ${highlight ? 'highlight' : ''}`}>
+      <div className="wc-stat-label">{label}</div>
+      <div className="wc-stat-value">{value}</div>
+    </div>
+  );
+}
+
+function Article() {
+  return (
+    <article className="tool-article">
+      <h2>Broken Links: A Slow Drain on Your Authority</h2>
+      <p>Internal broken links waste crawl budget and hurt the user experience. External broken links to dead resources are usually the bigger problem — they signal to search engines that your content isn’t maintained. Both should be fixed regularly, ideally as part of a quarterly content audit.</p>
+      <h3>What we check</h3>
+      <p>For each unique <code>&lt;a href&gt;</code> on the page we send a HEAD request (with a GET fallback for servers that reject HEAD). We follow redirects and report the final status code. The results are split into internal vs external, ok vs broken, and you can filter the list to focus on what matters.</p>
+      <h3>What to do with the results</h3>
+      <p>For internal broken links, fix them — either correct the path or 301 redirect the destination. For external 404s, replace the link with a current source or remove the reference. For external 403/redirect-to-homepage cases, the source has often moved their content; track it down or update. For external timeout errors, retry once before assuming the site is down.</p>
+    </article>
   );
 }

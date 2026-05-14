@@ -1,73 +1,167 @@
 "use client";
 import { useState } from 'react';
 
-export default function PageSpeedChecker() {
+const SEV_ICON = { pass: '✓', warn: '!', fail: '✕', info: 'i' };
+const SEV_LABEL = { pass: 'Good', warn: 'Warning', fail: 'Issue', info: 'Info' };
+
+function fmtMs(n) { return n == null ? '—' : `${n} ms`; }
+function fmtBytes(n) {
+  if (n == null) return '—';
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(2)} MB`;
+}
+
+function gradeColor(g) {
+  if (g === 'pass') return '#10b981';
+  if (g === 'warn') return '#f59e0b';
+  if (g === 'fail') return '#ef4444';
+  return '#9ca3af';
+}
+
+export default function PageSpeedPage() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleCheck = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (!url) return;
-    setLoading(true); setResult(null);
-    await new Promise(r => setTimeout(r, 1800));
-    setResult({
-      mobile: { score: 68, lcp: '3.2s', fid: '120ms', cls: '0.08', fcp: '2.1s', ttfb: '0.4s' },
-      desktop: { score: 91, lcp: '1.4s', fid: '18ms', cls: '0.02', fcp: '0.8s', ttfb: '0.3s' },
-    });
-    setLoading(false);
+    setLoading(true); setData(null); setError(null);
+    try {
+      const res = await fetch('/api/tools/page-speed', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json?.error || `Request failed with status ${res.status}.`);
+        if (json?.timings) setData(json);
+      } else setData(json);
+    } catch (err) { setError(err?.message || 'Something went wrong.'); }
+    finally { setLoading(false); }
   };
-
-  const scoreColor = s => s >= 90 ? '#10B981' : s >= 50 ? '#F59E0B' : '#EF4444';
-  const scoreLabel = s => s >= 90 ? 'Good' : s >= 50 ? 'Needs Improvement' : 'Poor';
 
   return (
     <div>
       <div className="tool-header"><h1>Page Speed Checker</h1></div>
       <div className="tool-card">
-        <form className="search-bar" onSubmit={handleCheck}>
-          <input type="url" placeholder="Enter website URL..." className="search-input" value={url} onChange={e => setUrl(e.target.value)} required />
-          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Measuring...' : 'Check Speed'}</button>
+        <form className="search-bar" onSubmit={submit}>
+          <input type="text" placeholder="https://example.com" className="search-input" value={url} onChange={(e) => setUrl(e.target.value)} required />
+          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Measuring…' : 'Measure'}</button>
         </form>
-        <p className="tool-description">Measure Core Web Vitals and performance scores for both mobile and desktop versions of any webpage.</p>
-        {result && (
-          <div className="result-box" style={{ gap: '1rem' }}>
-            {['mobile', 'desktop'].map(device => (
-              <div key={device}>
-                <h4 style={{ color: 'var(--text-primary)', textTransform: 'capitalize', marginBottom: '0.5rem' }}>{device}</h4>
-                <div className="result-grid">
-                  <div className="result-item">
-                    <span className="result-label">Performance Score</span>
-                    <span style={{ color: scoreColor(result[device].score), fontWeight: 700 }}>{result[device].score}/100 — {scoreLabel(result[device].score)}</span>
-                  </div>
-                  <div className="result-item"><span className="result-label">LCP (Largest Contentful Paint)</span><span className="result-value">{result[device].lcp}</span></div>
-                  <div className="result-item"><span className="result-label">FID (First Input Delay)</span><span className="result-value">{result[device].fid}</span></div>
-                  <div className="result-item"><span className="result-label">CLS (Cumulative Layout Shift)</span><span className="result-value">{result[device].cls}</span></div>
-                  <div className="result-item"><span className="result-label">FCP (First Contentful Paint)</span><span className="result-value">{result[device].fcp}</span></div>
-                  <div className="result-item"><span className="result-label">TTFB (Time to First Byte)</span><span className="result-value">{result[device].ttfb}</span></div>
-                </div>
+        <p className="tool-description">
+          Measures the real network timings of the request — DNS, TCP, TLS, time-to-first-byte, and total
+          download — using Node’s low-level socket events for sub-millisecond accuracy. Then probes the
+          top scripts, stylesheets and images for size. Server-side measurement, so it doesn’t depend on
+          your browser.
+        </p>
+
+        {error && <div className="result-error">{error}</div>}
+        {data && !data.error && <ResultBlock data={data} />}
+      </div>
+      <div style={{ marginTop: '4rem' }}><Article /></div>
+    </div>
+  );
+}
+
+function ResultBlock({ data }) {
+  const { score, timings: t, grades, htmlSize, bytesOnWire, resourceProbes, totalBytes, issues, summary, contentEncoding, note } = data;
+  const banner = summary.fail ? 'danger' : summary.warn ? 'warning' : 'success';
+  const max = Math.max(t.totalMs || 0, 100);
+  return (
+    <div className="result-box">
+      <div className={`result-banner ${banner}`}>
+        <strong>Heuristic score: {score}/100</strong>
+        <span>· total {fmtMs(t.totalMs)} · TTFB {fmtMs(t.ttfbMs)} · {fmtBytes(totalBytes)} sampled</span>
+      </div>
+
+      <h3 className="result-section-title">Network timings</h3>
+      <div className="ps2-timings">
+        <Bar label="DNS lookup" ms={t.dnsMs} max={max} grade={grades.dns} />
+        <Bar label="TCP connect" ms={t.tcpMs} max={max} grade="info" />
+        <Bar label="TLS handshake" ms={t.tlsMs} max={max} grade={grades.tls} />
+        <Bar label="Time to first byte" ms={t.ttfbMs} max={max} grade={grades.ttfb} highlight />
+        <Bar label="HTML download" ms={t.downloadMs} max={max} grade="info" />
+        <Bar label="Total" ms={t.totalMs} max={max} grade={grades.total} />
+      </div>
+
+      <h3 className="result-section-title">Sizes</h3>
+      <div className="result-grid">
+        <div className="result-item"><span className="result-label">HTML on the wire</span><span className="result-value">{fmtBytes(bytesOnWire)}{contentEncoding ? ` (${contentEncoding})` : ''}</span></div>
+        <div className="result-item"><span className="result-label">HTML decompressed</span><span className="result-value">{fmtBytes(htmlSize)}</span></div>
+        <div className="result-item"><span className="result-label">Sampled resources</span><span className="result-value">{resourceProbes.length}</span></div>
+        <div className="result-item"><span className="result-label">Total bytes (HTML + sampled)</span><span className="result-value">{fmtBytes(totalBytes)}</span></div>
+      </div>
+
+      {resourceProbes.length > 0 && (
+        <>
+          <h3 className="result-section-title">Resource probes ({resourceProbes.length})</h3>
+          <div className="ps-resource-list">
+            {resourceProbes.map((r, idx) => (
+              <div key={idx} className="ps2-resource">
+                <span className={`status-pill kind-${r.error ? 'danger' : kindOf(r.status)}`}>{r.error ? 'ERR' : (r.status || '—')}</span>
+                <span className="result-value-mono ps-resource-url">{r.url}</span>
+                <span className="ps-resource-size">{fmtBytes(r.size)}</span>
+                <span className="ps-resource-size">{r.ms ? `${r.ms} ms` : '—'}</span>
               </div>
             ))}
           </div>
-        )}
-      </div>
-      <div style={{ marginTop: '4rem' }}>
-        <article className="tool-article">
-          <h2>Core Web Vitals & Page Speed: Google's Performance Metrics Demystified</h2>
-          <p>Page speed has been an official Google ranking factor since 2010, but the introduction of Core Web Vitals as a ranking signal in 2021 marked a significant evolution in how speed is measured and evaluated. Rather than relying on synthetic lab tests and arbitrary millisecond thresholds, Core Web Vitals measure actual user experiences using real-world data from Chrome users. They're designed to capture the specific aspects of page performance that users genuinely notice and care about.</p>
-          <p>There are three Core Web Vitals, each measuring a different dimension of the user experience: loading performance, interactivity, and visual stability. Understanding each one individually helps you prioritize your optimization efforts rather than chasing a single abstract "speed score."</p>
-          <h3>LCP — Largest Contentful Paint</h3>
-          <p>LCP measures how long it takes for the largest visible element on the page to fully load. This is usually a hero image, a large heading, or the main content block. A good LCP is 2.5 seconds or less. Needs Improvement is between 2.5 and 4 seconds. Anything above 4 seconds is classified as Poor. LCP is heavily influenced by image optimization, server response time, and render-blocking resources like large CSS or JavaScript files that delay the browser from rendering content.</p>
-          <h3>INP — Interaction to Next Paint (formerly FID)</h3>
-          <p>INP replaced First Input Delay (FID) as a Core Web Vital in 2024. It measures the responsiveness of a page to user interactions — specifically, how long it takes for the page to visually respond after a user taps, clicks, or types. Poor INP is almost always caused by excessive JavaScript execution that blocks the main thread. Heavy third-party scripts — analytics, chat widgets, ad networks — are frequent culprits. A good INP score is under 200 milliseconds.</p>
-          <h3>CLS — Cumulative Layout Shift</h3>
-          <p>CLS measures visual stability — how much the page layout unexpectedly shifts while loading. Have you ever been about to click a button and suddenly the page jumps because an image loaded above it, and you accidentally clicked something else entirely? That's a layout shift. A good CLS score is under 0.1. The most common causes are images without explicit width and height attributes, ads or embeds that appear after the page has already rendered, and web fonts that cause text to reflow when they load.</p>
-          <h3>TTFB — Time to First Byte</h3>
-          <p>TTFB measures how quickly the server starts sending data after a browser request. While not a Core Web Vital itself, a slow TTFB cascades into poor scores for all other metrics because nothing can load until the server starts responding. TTFB is primarily a server-side concern — hosting quality, database performance, server-side rendering complexity, and CDN configuration all directly affect it. A good TTFB is under 0.8 seconds.</p>
-          <h3>Mobile vs. Desktop Performance</h3>
-          <p>Google uses mobile-first indexing, meaning it evaluates the mobile version of your pages for ranking purposes. This makes mobile performance scores more important than desktop ones for SEO purposes. Mobile scores are consistently lower than desktop scores for most websites because mobile devices have less processing power and often operate on slower connections. Use our Page Speed Checker to benchmark both — use the mobile score to understand your SEO impact, and the desktop score to understand the experience your best-connected users are getting.</p>
-        </article>
-      </div>
+        </>
+      )}
+
+      <h3 className="result-section-title">Findings</h3>
+      <ul className="og-check-list">
+        {issues.map((c, idx) => (
+          <li key={idx} className={`og-check-row sev-${c.severity}`}>
+            <span className={`og-check-icon sev-${c.severity}`}>{SEV_ICON[c.severity]}</span>
+            <div className="og-check-body">
+              <div className="og-check-head"><span className={`og-check-label sev-${c.severity}`}>{SEV_LABEL[c.severity]}</span></div>
+              <div className="og-check-message">{c.message}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="ps2-note">{note}</div>
     </div>
+  );
+}
+
+function kindOf(s) {
+  if (!s) return 'unknown';
+  if (s >= 200 && s < 300) return 'success';
+  if (s >= 300 && s < 400) return 'redirect';
+  if (s >= 400 && s < 500) return 'client-error';
+  if (s >= 500) return 'server-error';
+  return 'unknown';
+}
+
+function Bar({ label, ms, max, grade, highlight }) {
+  const pct = ms == null ? 0 : Math.min(100, (ms / max) * 100);
+  return (
+    <div className={`ps2-bar-row ${highlight ? 'highlight' : ''}`}>
+      <div className="ps2-bar-label">{label}</div>
+      <div className="ps2-bar"><div className="ps2-bar-fill" style={{ width: `${pct}%`, background: gradeColor(grade) }} /></div>
+      <div className="ps2-bar-num">{fmtMs(ms)}</div>
+    </div>
+  );
+}
+
+function Article() {
+  return (
+    <article className="tool-article">
+      <h2>What This Tool Measures (and What It Can’t)</h2>
+      <p>This tool uses Node’s low-level socket events to give you the real network timings of your page request: DNS resolution, TCP connect, TLS handshake, time-to-first-byte (TTFB), and total HTML download. These numbers are what your origin server is actually responsible for — they don’t depend on your browser, plugins, or device.</p>
+      <h3>What this tool does NOT measure</h3>
+      <p>Core Web Vitals (LCP, CLS, INP), JavaScript execution time, render-blocking CSS, layout shifts, third-party tag impact, and anything about the visual rendering of the page. Those require a real browser. Use Google PageSpeed Insights, WebPageTest, or Chrome DevTools’ Performance panel for that.</p>
+      <h3>How to use the numbers</h3>
+      <ul>
+        <li><strong>TTFB &gt; 600 ms</strong> almost always points at the origin (slow database queries, cold serverless starts, lack of edge caching).</li>
+        <li><strong>TLS &gt; 500 ms</strong> indicates older TLS configuration — TLS 1.3 plus session resumption can shave 100–300 ms.</li>
+        <li><strong>DNS &gt; 300 ms</strong> means your DNS provider is slow or you’re not using anycast.</li>
+        <li><strong>Total page bytes &gt; 3 MB</strong> is a budget-buster on mobile; investigate images, fonts, and JavaScript first.</li>
+      </ul>
+    </article>
   );
 }

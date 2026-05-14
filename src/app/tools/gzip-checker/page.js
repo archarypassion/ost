@@ -1,69 +1,136 @@
 "use client";
-
 import { useState } from 'react';
 
-export default function GzipChecker() {
+const SEV_ICON = { pass: '✓', warn: '!', fail: '✕', info: 'i' };
+const SEV_LABEL = { pass: 'Good', warn: 'Warning', fail: 'Issue', info: 'Info' };
+
+export default function GzipCheckerPage() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleCheck = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (!url) return;
-    setLoading(true);
-    setResult(null);
-    await new Promise(r => setTimeout(r, 950));
-    setResult({ gzipEnabled: true, encoding: 'gzip', originalSize: '142 KB', compressedSize: '38 KB', savings: '73.2%', contentType: 'text/html; charset=UTF-8' });
-    setLoading(false);
+    setLoading(true); setData(null); setError(null);
+    try {
+      const res = await fetch('/api/tools/gzip-checker', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json?.error || `Request failed with status ${res.status}.`);
+        if (json?.finalUrl) setData(json);
+      } else setData(json);
+    } catch (err) { setError(err?.message || 'Something went wrong.'); }
+    finally { setLoading(false); }
   };
 
   return (
     <div>
-      <div className="tool-header"><h1>Gzip Checker</h1></div>
+      <div className="tool-header"><h1>Gzip Compression Checker</h1></div>
       <div className="tool-card">
-        <form className="search-bar" onSubmit={handleCheck}>
-          <input type="url" placeholder="Enter website URL..." className="search-input" value={url} onChange={e => setUrl(e.target.value)} required />
-          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Checking...' : 'Check Gzip'}</button>
+        <form className="search-bar" onSubmit={submit}>
+          <input type="text" placeholder="https://example.com" className="search-input" value={url} onChange={(e) => setUrl(e.target.value)} required />
+          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Checking…' : 'Check Compression'}</button>
         </form>
-        <p className="tool-description">Check whether Gzip or Brotli compression is enabled on any URL and how much bandwidth it saves.</p>
-        {result && (
-          <div className="result-box">
-            <div className="result-score" style={{ color: result.gzipEnabled ? '#10B981' : '#EF4444' }}>
-              Compression: {result.gzipEnabled ? `✓ Enabled (${result.encoding})` : '✗ Not Enabled'}
-            </div>
-            <div className="result-grid">
-              <div className="result-item"><span className="result-label">Original Size</span><span className="result-value">{result.originalSize}</span></div>
-              <div className="result-item"><span className="result-label">Compressed Size</span><span className="result-value">{result.compressedSize}</span></div>
-              <div className="result-item"><span className="result-label">Bandwidth Saving</span><span className="result-value" style={{ color: '#10B981' }}>{result.savings}</span></div>
-              <div className="result-item"><span className="result-label">Content-Type</span><span className="result-value">{result.contentType}</span></div>
-            </div>
-          </div>
+        <p className="tool-description">
+          We fetch your page advertising support for gzip, deflate, and Brotli — measure how many bytes
+          arrive on the wire, decompress them, and compare with the uncompressed size to show your real
+          transfer savings. We also do an identity-encoding probe to catch misconfigured servers.
+        </p>
+
+        {error && <div className="result-error">{error}</div>}
+        {data && !data.error && <ResultBlock data={data} />}
+      </div>
+      <div style={{ marginTop: '4rem' }}><Article /></div>
+    </div>
+  );
+}
+
+function ResultBlock({ data }) {
+  const { summary, contentEncoding, contentType, bytesOnWire, uncompressedSize, savingsBytes, savingsPct, ratio, formatted, identityCheck, varyHeader, checks } = data;
+  const banner = summary.fail ? 'danger' : summary.warn ? 'warning' : 'success';
+  const bannerText = !contentEncoding
+    ? 'No compression — server is sending uncompressed bytes'
+    : `Compressed with ${contentEncoding} — ${savingsPct?.toFixed(1)}% smaller on the wire`;
+
+  return (
+    <div className="result-box">
+      <div className={`result-banner ${banner}`}>
+        <strong>{bannerText}</strong>
+        <span>· wire: {formatted.wire} · uncompressed: {formatted.uncompressed}{ratio ? ` · ratio ${ratio}×` : ''}</span>
+      </div>
+
+      <div className="gz-bars">
+        <div className="gz-bar-row">
+          <div className="gz-bar-label">On the wire ({contentEncoding || 'identity'})</div>
+          <div className="gz-bar"><div className="gz-bar-fill compressed" style={{ width: `${(bytesOnWire / Math.max(uncompressedSize, bytesOnWire)) * 100}%` }} /></div>
+          <div className="gz-bar-num">{formatted.wire}</div>
+        </div>
+        <div className="gz-bar-row">
+          <div className="gz-bar-label">Uncompressed</div>
+          <div className="gz-bar"><div className="gz-bar-fill uncompressed" style={{ width: '100%' }} /></div>
+          <div className="gz-bar-num">{formatted.uncompressed}</div>
+        </div>
+        {savingsBytes !== null && (
+          <div className="gz-savings">Saves <strong>{formatted.savings}</strong> per request{savingsPct !== null ? ` (${savingsPct.toFixed(1)}%)` : ''}.</div>
         )}
       </div>
-      <div style={{ marginTop: '4rem' }}>
-        <article className="tool-article">
-          <h2>Gzip Compression: The Quick Win That Makes Your Website Significantly Faster</h2>
-          <p>If you're looking for one of the highest-return, lowest-effort performance optimizations you can make to a website, enabling Gzip compression is right at the top of the list. It's not glamorous — there are no stunning visual changes, no new features for users to interact with. But behind the scenes, it can reduce the amount of data transferred between your server and visitors' browsers by 60-80%, which translates directly into faster page loads, lower bandwidth costs, and real improvements to your Core Web Vitals scores.</p>
-          <p>And yet, a surprising number of websites still don't have it enabled. Sometimes it's a server misconfiguration. Sometimes a CDN or reverse proxy strips the compression headers. Sometimes it was enabled, then accidentally disabled during a server migration. That's exactly why having a quick, reliable way to check is so valuable.</p>
 
-          <h3>How Gzip Compression Actually Works</h3>
-          <p>Gzip is a data compression algorithm that works by finding and eliminating repetitive patterns in files. HTML, CSS, JavaScript, and plain text files are ideal candidates for Gzip compression because they contain enormous amounts of repetition — the same HTML tags appearing hundreds of times, CSS class names repeated throughout a stylesheet, JavaScript variable names used across thousands of lines of code.</p>
-          <p>When a browser requests a page, it sends an HTTP header saying "Accept-Encoding: gzip, deflate, br" — signaling that it can handle compressed content. If your server has compression enabled, it compresses the file on the fly, sends the smaller compressed version, and the browser decompresses it locally before rendering. The decompression step is so fast on modern hardware that it adds virtually zero perceivable delay, making the net effect an almost pure win.</p>
-
-          <h3>Gzip vs. Brotli: Which Is Better?</h3>
-          <p>Brotli is a newer compression algorithm developed by Google, and in most cases it outperforms Gzip — typically achieving 15-20% better compression ratios on web assets. All modern browsers support Brotli, and it's increasingly supported by web servers and CDNs. If your infrastructure supports it, Brotli is the preferred choice. However, Gzip remains the universal fallback — every browser and server supports it — making it the reliable baseline.</p>
-          <p>In practice, the best setup is to serve Brotli to browsers that support it and fall back to Gzip for older clients. Most modern CDNs (Cloudflare, Fastly, AWS CloudFront) handle this negotiation automatically.</p>
-
-          <h3>What Shouldn't Be Compressed</h3>
-          <p>Not everything benefits from compression. Images (JPEG, PNG, WebP, AVIF) are already compressed using their own algorithms — trying to Gzip them will actually make them slightly larger. The same is true for video files, audio files, and ZIP archives. Applying Gzip to these file types wastes CPU cycles on the server and can mildly increase response time. A properly configured server will apply compression only to text-based MIME types like HTML, CSS, JavaScript, JSON, SVG, and XML.</p>
-
-          <h3>How to Enable Gzip on Your Server</h3>
-          <p>On Apache servers, Gzip is enabled via the <code>mod_deflate</code> module. You add directives to your <code>.htaccess</code> file to specify which file types to compress. On Nginx, the <code>gzip</code> directive in your server block configuration enables compression. On Node.js applications, the <code>compression</code> middleware package adds Gzip support with just a few lines of code. Most managed hosting providers (cPanel hosts, Kinsta, WP Engine, etc.) have Gzip enabled by default or offer a simple toggle in their control panels.</p>
-
-          <h3>The SEO Impact of Compression</h3>
-          <p>Page speed has been an official Google ranking factor since 2010, and with the introduction of Core Web Vitals as ranking signals in 2021, it became even more significant. Gzip compression directly improves Largest Contentful Paint (LCP) — the time until the main content of a page is visible — by reducing how long it takes for HTML and CSS to download. For content-heavy pages, the difference can be hundreds of milliseconds, which is noticeable to users and measurable by Google. Use our Gzip Checker to instantly confirm whether your server is taking advantage of this fundamental optimization.</p>
-        </article>
+      <h3 className="result-section-title">Details</h3>
+      <div className="result-grid">
+        <div className="result-item"><span className="result-label">Content-Encoding</span><span className="result-value">{contentEncoding || '— none —'}</span></div>
+        <div className="result-item"><span className="result-label">Content-Type</span><span className="result-value">{contentType || '—'}</span></div>
+        <div className="result-item"><span className="result-label">Vary header</span><span className="result-value">{varyHeader || '—'}</span></div>
+        <div className="result-item"><span className="result-label">Wire bytes</span><span className="result-value">{bytesOnWire.toLocaleString()} B</span></div>
+        <div className="result-item"><span className="result-label">Uncompressed bytes</span><span className="result-value">{uncompressedSize.toLocaleString()} B</span></div>
+        <div className="result-item"><span className="result-label">Compression ratio</span><span className="result-value">{ratio ? `${ratio}×` : '—'}</span></div>
       </div>
+
+      {identityCheck && (
+        <>
+          <h3 className="result-section-title">Identity-encoding probe</h3>
+          <div className="gz-identity">
+            <div>
+              <strong>Accept-Encoding: identity</strong> request returned <code>{identityCheck.contentEncoding || 'no encoding'}</code> in {identityCheck.bytes.toLocaleString()} bytes.
+            </div>
+            {identityCheck.servedCompressedAnyway && (
+              <div className="gz-identity-warn">⚠ Server sent compressed bytes despite <code>identity</code> being requested — non-conformant behaviour.</div>
+            )}
+          </div>
+        </>
+      )}
+
+      <h3 className="result-section-title">Findings</h3>
+      <ul className="og-check-list">
+        {checks.map((c, idx) => (
+          <li key={idx} className={`og-check-row sev-${c.severity}`}>
+            <span className={`og-check-icon sev-${c.severity}`}>{SEV_ICON[c.severity]}</span>
+            <div className="og-check-body">
+              <div className="og-check-head"><span className={`og-check-label sev-${c.severity}`}>{SEV_LABEL[c.severity]}</span></div>
+              <div className="og-check-message">{c.message}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
+  );
+}
+
+function Article() {
+  return (
+    <article className="tool-article">
+      <h2>HTTP Compression: The Easiest Performance Win Most Sites Still Miss</h2>
+      <p>HTTP compression — gzip, deflate, or Brotli — can shrink HTML, CSS, and JavaScript responses by 60–80% on the wire. That translates directly into faster page loads, lower bandwidth bills, and better Core Web Vitals scores. Yet a surprising number of production sites still ship uncompressed assets, especially API endpoints and dynamic HTML.</p>
+      <h3>gzip vs Brotli</h3>
+      <p>gzip has been universally supported since 2000. Brotli (announced 2015) typically compresses 15–25% smaller than gzip for HTML and CSS at equivalent CPU cost. Most modern CDNs (Cloudflare, Fastly, AWS CloudFront, Vercel) support Brotli out of the box. Enable it.</p>
+      <h3>What this tool does</h3>
+      <p>We bypass Node’s automatic decompression and read the raw bytes directly from the socket — that gives us the actual transfer size, not what some library reports. We then decompress and measure the original payload, so the savings number you see is the literal byte difference visitors experience. We also probe with <code>Accept-Encoding: identity</code> to catch servers that are misconfigured.</p>
+      <h3>Common findings</h3>
+      <p>If we report no compression, your origin or CDN isn’t serving compressed responses for this URL — check your server config (nginx <code>gzip on;</code> / Apache <code>mod_deflate</code> / your CDN’s settings). If we report compression but the savings are weak (under 50%), the server may be using a low compression level — bump it up. If we report compression on already-compressed content (JPEG, MP4) the savings will naturally be tiny — that’s expected.</p>
+    </article>
   );
 }

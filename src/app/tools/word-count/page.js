@@ -1,59 +1,206 @@
 "use client";
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
-export default function WordCountChecker() {
+export default function WordCountPage() {
+  const [mode, setMode] = useState('text');
   const [text, setText] = useState('');
-  const result = (() => {
-    if (!text.trim()) return null;
-    const words = text.trim().split(/\s+/).filter(Boolean);
-    const chars = text.length;
-    const charsNoSpace = text.replace(/\s/g, '').length;
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
-    const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0).length;
-    const readingTime = Math.ceil(words.length / 238);
-    return { words: words.length, chars, charsNoSpace, sentences, paragraphs, readingTime };
-  })();
+  const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Live local stats while typing in text mode (no debounce needed for small text)
+  const localStats = useMemo(() => {
+    if (mode !== 'text' || !text.trim()) return null;
+    return analyseLocal(text);
+  }, [mode, text]);
+
+  useEffect(() => {
+    setError(null);
+  }, [mode]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true); setData(null); setError(null);
+    try {
+      const body = mode === 'text' ? { mode: 'text', text } : { mode: 'url', url: url.trim() };
+      const res = await fetch('/api/tools/word-count', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json?.error || `Request failed with status ${res.status}.`);
+        if (json?.finalUrl) setData(json);
+      } else setData(json);
+    } catch (err) {
+      setError(err?.message || 'Something went wrong.');
+    } finally { setLoading(false); }
+  };
 
   return (
     <div>
       <div className="tool-header"><h1>Word Count Checker</h1></div>
       <div className="tool-card">
-        <textarea
-          placeholder="Paste or type your content here..."
-          style={{ width: '100%', maxWidth: '780px', minHeight: '180px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '1rem', fontSize: '0.95rem', fontFamily: 'inherit', resize: 'vertical', outline: 'none' }}
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
-        <p className="tool-description">Count words, characters, sentences, paragraphs, and estimated reading time for any text in real-time.</p>
-        {result && (
-          <div className="result-box">
-            <div className="result-grid">
-              <div className="result-item"><span className="result-label">Words</span><span className="result-value" style={{ color: 'var(--accent-color)', fontSize: '1.1rem', fontWeight: 700 }}>{result.words.toLocaleString()}</span></div>
-              <div className="result-item"><span className="result-label">Characters (with spaces)</span><span className="result-value">{result.chars.toLocaleString()}</span></div>
-              <div className="result-item"><span className="result-label">Characters (no spaces)</span><span className="result-value">{result.charsNoSpace.toLocaleString()}</span></div>
-              <div className="result-item"><span className="result-label">Sentences</span><span className="result-value">{result.sentences}</span></div>
-              <div className="result-item"><span className="result-label">Paragraphs</span><span className="result-value">{result.paragraphs}</span></div>
-              <div className="result-item"><span className="result-label">Reading Time</span><span className="result-value">{result.readingTime} min</span></div>
+        <div className="mode-tabs">
+          <button type="button" className={`mode-tab ${mode === 'text' ? 'active' : ''}`} onClick={() => setMode('text')}>Paste text</button>
+          <button type="button" className={`mode-tab ${mode === 'url' ? 'active' : ''}`} onClick={() => setMode('url')}>Fetch URL</button>
+        </div>
+
+        <form onSubmit={submit}>
+          {mode === 'text' ? (
+            <textarea
+              placeholder="Paste or type your content here..."
+              className="wc-textarea"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              required
+            />
+          ) : (
+            <div className="search-bar">
+              <input type="text" placeholder="https://example.com/page" className="search-input" value={url} onChange={(e) => setUrl(e.target.value)} required />
+              <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Fetching…' : 'Analyse Page'}</button>
             </div>
-          </div>
+          )}
+        </form>
+
+        <p className="tool-description">
+          Count words, characters, sentences, paragraphs, syllables, reading and speaking time, plus
+          Flesch readability — either on text you paste here or on any live web page.
+        </p>
+
+        {error && <div className="result-error">{error}</div>}
+        {mode === 'text' && localStats && <StatsBlock stats={localStats} />}
+        {data && !data.error && data.mode === 'url' && (
+          <>
+            {data.extracted && <ExtractedBlock e={data.extracted} url={data.finalUrl} status={data.httpStatus} />}
+            <StatsBlock stats={data.stats} />
+          </>
         )}
       </div>
-      <div style={{ marginTop: '4rem' }}>
-        <article className="tool-article">
-          <h2>Word Count: Why Length Matters in SEO (But Not in the Way Most People Think)</h2>
-          <p>Ask ten SEOs whether word count is a ranking factor and you'll get ten different answers. The truth is nuanced enough that both the "yes" and "no" camps can point to evidence supporting their position. Google has publicly stated there's no minimum word count requirement, yet numerous correlation studies consistently show that top-ranking pages for competitive keywords tend to be longer and more comprehensive than lower-ranking ones. So what's actually going on?</p>
-          <p>The relationship between word count and rankings isn't causal — longer content doesn't rank better because it has more words. It ranks better because more words, done right, signal topical depth and authority. A 3,000-word article that thoroughly covers a subject from multiple angles, anticipates reader questions, and provides genuinely useful detail is inherently more valuable than a 400-word piece that scratches the surface. The word count is a byproduct of quality, not a cause of it.</p>
-          <h3>Word Count Benchmarks by Content Type</h3>
-          <p>Different content types have different expectations, and what constitutes "enough" varies considerably by context. For highly competitive informational queries — "how does machine learning work," "what is content marketing" — the top-ranking pages are frequently 2,000-4,000 words. For transactional queries — "buy red sneakers size 10" — a well-structured 300-word product page can outrank a bloated 2,000-word essay. For local queries — "dentist near me" — a concise, well-structured page with clear contact information often performs best.</p>
-          <p>The key is matching content length to user intent. When someone wants a quick answer, deliver it concisely. When someone wants a deep dive, give them depth. The mistake many content creators make is writing to a target word count rather than writing to satisfy the actual information need behind the search query.</p>
-          <h3>Reading Time as a Proxy for Engagement</h3>
-          <p>Our Word Count Checker calculates estimated reading time based on an average adult reading speed of 238 words per minute (a commonly cited research benchmark). Reading time is a useful metric for understanding your content from the reader's perspective. A 6-minute read is appropriate for an in-depth guide. A 30-second read is appropriate for an FAQ answer. Knowing your reading time helps you structure your content correctly — if a guide reads in 90 seconds but you intended it to be comprehensive, it's probably too thin.</p>
-          <h3>Character Count for Platform-Specific Optimization</h3>
-          <p>Word count isn't the only metric worth tracking. Character count becomes critical when writing meta descriptions (155-160 character limit), page titles (50-60 characters), social media posts (280 characters for X/Twitter, 2,200 for Instagram captions), and email subject lines (40-50 characters for optimal mobile display). Our Word Count Checker shows both raw character count and character count excluding spaces, which is useful for platforms that use one metric or the other in their limits.</p>
-          <h3>Thin Content: The Content Quality Threshold</h3>
-          <p>While there's no hard minimum, very short pages — typically under 200-300 words — are often classified by Google as "thin content" if they don't add significant unique value. Thin content was specifically targeted by Google's Panda algorithm and continues to be a quality signal in Google's evaluation of site quality. If you have many short pages on your site, it may be worth consolidating them into more comprehensive resources or expanding them with genuinely useful additional information. Use our Word Count Checker as a first-pass tool to identify pages that might be candidates for expansion.</p>
-        </article>
+      <div style={{ marginTop: '4rem' }}><Article /></div>
+    </div>
+  );
+}
+
+function ExtractedBlock({ e, url, status }) {
+  return (
+    <div className="result-box" style={{ marginBottom: '1rem' }}>
+      <h3 className="result-section-title">Page</h3>
+      <div className="result-grid">
+        <div className="result-item"><span className="result-label">URL</span><span className="result-value-mono">{url}</span></div>
+        <div className="result-item"><span className="result-label">HTTP</span><span className="result-value">{status}</span></div>
+        <div className="result-item"><span className="result-label">Title</span><span className="result-value">{e.title || '—'}</span></div>
+        <div className="result-item"><span className="result-label">First H1</span><span className="result-value">{e.firstH1 || '—'}</span></div>
+        <div className="result-item"><span className="result-label">H1 / H2 count</span><span className="result-value">{e.h1Count} / {e.h2Count}</span></div>
+        <div className="result-item"><span className="result-label">HTML lang</span><span className="result-value">{e.lang || '—'}</span></div>
+        <div className="result-item"><span className="result-label">HTML size</span><span className="result-value">{(e.htmlLength / 1024).toFixed(1)} KB</span></div>
       </div>
     </div>
+  );
+}
+
+function StatsBlock({ stats }) {
+  return (
+    <div className="result-box">
+      <h3 className="result-section-title">Counts</h3>
+      <div className="wc-grid">
+        <Stat label="Words" value={stats.words.toLocaleString()} highlight />
+        <Stat label="Characters" value={stats.characters.toLocaleString()} />
+        <Stat label="No spaces" value={stats.charactersNoSpaces.toLocaleString()} />
+        <Stat label="Sentences" value={stats.sentences.toLocaleString()} />
+        <Stat label="Paragraphs" value={stats.paragraphs.toLocaleString()} />
+        <Stat label="Syllables" value={stats.syllables.toLocaleString()} />
+      </div>
+
+      <h3 className="result-section-title">Word stats</h3>
+      <div className="wc-grid">
+        <Stat label="Avg word length" value={`${stats.avgWordLength} chars`} />
+        <Stat label="Avg sentence length" value={`${stats.avgSentenceLength} words`} />
+        <Stat label="Long words (7+)" value={stats.longWords.toLocaleString()} />
+        <Stat label="Very long words (12+)" value={stats.veryLongWords.toLocaleString()} />
+        <Stat label="Reading time" value={`${stats.readingTimeMinutes} min`} sub="@ 230 wpm" />
+        <Stat label="Speaking time" value={`${stats.speakingTimeMinutes} min`} sub="@ 130 wpm" />
+      </div>
+
+      {stats.fleschReadingEase !== null && (
+        <>
+          <h3 className="result-section-title">Readability</h3>
+          <div className="wc-readability">
+            <div className="wc-readability-score">
+              <div className="wc-readability-num">{stats.fleschReadingEase}</div>
+              <div className="wc-readability-sub">Flesch Reading Ease</div>
+            </div>
+            <div className="wc-readability-grade">
+              <div className="wc-readability-num">{stats.fleschKincaidGrade}</div>
+              <div className="wc-readability-sub">Flesch–Kincaid grade</div>
+            </div>
+            <div className="wc-readability-label">{stats.readabilityLabel}</div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value, sub, highlight }) {
+  return (
+    <div className={`wc-stat ${highlight ? 'highlight' : ''}`}>
+      <div className="wc-stat-label">{label}</div>
+      <div className="wc-stat-value">{value}</div>
+      {sub && <div className="wc-stat-sub">{sub}</div>}
+    </div>
+  );
+}
+
+// Local (client-side) analyser mirrors the server one closely so live typing is instant.
+function analyseLocal(text) {
+  const cleaned = text.toLowerCase().replace(/[^\p{L}\p{N}'\-\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+  const tokens = cleaned ? cleaned.split(' ').filter((t) => t.length >= 1 && !/^[\d\-]+$/.test(t)) : [];
+  const words = tokens.length;
+  const characters = text.length;
+  const charactersNoSpaces = text.replace(/\s/g, '').length;
+  const sentenceMatches = text.match(/[^.!?]+[.!?]+/g);
+  const sentences = sentenceMatches ? sentenceMatches.length : (text.trim() ? 1 : 0);
+  const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim().length > 0).length || (text.trim() ? 1 : 0);
+  let syllables = 0, longWords = 0, veryLongWords = 0;
+  for (const t of tokens) { syllables += syl(t); if (t.length >= 7) longWords++; if (t.length >= 12) veryLongWords++; }
+  const avgWordLength = words ? +(tokens.reduce((s, t) => s + t.length, 0) / words).toFixed(2) : 0;
+  const avgSentenceLength = sentences ? +(words / sentences).toFixed(2) : 0;
+  const flesch = words && sentences ? +(206.835 - 1.015 * (words / sentences) - 84.6 * (syllables / words)).toFixed(1) : null;
+  const fk = words && sentences ? +(0.39 * (words / sentences) + 11.8 * (syllables / words) - 15.59).toFixed(1) : null;
+  return {
+    words, characters, charactersNoSpaces, sentences, paragraphs, syllables,
+    longWords, veryLongWords, avgWordLength, avgSentenceLength,
+    readingTimeMinutes: Math.max(1, Math.round(words / 230)),
+    speakingTimeMinutes: Math.max(1, Math.round(words / 130)),
+    fleschReadingEase: flesch,
+    fleschKincaidGrade: fk,
+    readabilityLabel: flesch === null ? null : (flesch >= 90 ? 'Very easy (5th grade)' : flesch >= 80 ? 'Easy (6th grade)' : flesch >= 70 ? 'Fairly easy (7th grade)' : flesch >= 60 ? 'Standard (8th–9th grade)' : flesch >= 50 ? 'Fairly difficult (10th–12th grade)' : flesch >= 30 ? 'Difficult (college)' : 'Very difficult (college graduate)'),
+  };
+}
+
+function syl(word) {
+  if (!word) return 0;
+  const w = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (w.length <= 3) return 1;
+  const cleaned = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '');
+  const m = cleaned.match(/[aeiouy]{1,2}/g);
+  return m ? m.length : 1;
+}
+
+function Article() {
+  return (
+    <article className="tool-article">
+      <h2>Word Count: Why Length Matters in SEO (and the Way It Doesn’t)</h2>
+      <p>Google has said many times that there’s no minimum word count, yet pages ranking for competitive informational queries are reliably longer and more comprehensive than the rest. The relationship is correlative, not causal — long content ranks because depth signals authority, not because Google rewards length.</p>
+      <h3>Match length to intent</h3>
+      <p>For deep informational queries (&ldquo;how does X work&rdquo;), top results are commonly 2,000–4,000 words. For transactional queries (&ldquo;buy size 10 sneakers&rdquo;), a tight 300-word product page outranks a 2,000-word essay. For local queries, concise wins. Write to satisfy the user’s task, not to hit a word target.</p>
+      <h3>Readability matters as much as length</h3>
+      <p>Flesch Reading Ease scores text from 0 (very hard) to 100 (very easy). Most general-audience web copy targets 60–70. The Flesch–Kincaid grade level estimates the U.S. school grade required to understand the text — most consumer content is best at grade 7–9. We compute both above so you can spot pages that are accidentally academic.</p>
+      <h3>How to use this tool</h3>
+      <p>Paste your draft for live counts as you type, or fetch any live URL to see how many words your published page actually has — because what your CMS shows in the editor is rarely what gets rendered to crawlers after templates, navigation, and footers strip in.</p>
+    </article>
   );
 }

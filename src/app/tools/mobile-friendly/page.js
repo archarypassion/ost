@@ -1,78 +1,129 @@
 "use client";
 import { useState } from 'react';
 
-export default function MobileFriendlyChecker() {
+const SEV_ICON = { pass: '✓', warn: '!', fail: '✕', info: 'i' };
+const SEV_LABEL = { pass: 'Good', warn: 'Warning', fail: 'Issue', info: 'Info' };
+
+export default function MobileFriendlyPage() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleCheck = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (!url) return;
-    setLoading(true); setResult(null);
-    await new Promise(r => setTimeout(r, 1300));
-    setResult({
-      isMobileFriendly: true,
-      viewportSet: true,
-      textReadable: true,
-      tapTargetsOk: false,
-      tapTargetIssues: 3,
-      contentWidthOk: true,
-      usesFlash: false,
-    });
-    setLoading(false);
+    setLoading(true); setData(null); setError(null);
+    try {
+      const res = await fetch('/api/tools/mobile-friendly', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json?.error || `Request failed with status ${res.status}.`);
+        if (json?.finalUrl) setData(json);
+      } else setData(json);
+    } catch (err) { setError(err?.message || 'Something went wrong.'); }
+    finally { setLoading(false); }
   };
 
   return (
     <div>
-      <div className="tool-header"><h1>Mobile Friendly Checker</h1></div>
+      <div className="tool-header"><h1>Mobile Friendly Test</h1></div>
       <div className="tool-card">
-        <form className="search-bar" onSubmit={handleCheck}>
-          <input type="url" placeholder="Enter website URL..." className="search-input" value={url} onChange={e => setUrl(e.target.value)} required />
-          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Testing...' : 'Test Mobile'}</button>
+        <form className="search-bar" onSubmit={submit}>
+          <input type="text" placeholder="https://example.com" className="search-input" value={url} onChange={(e) => setUrl(e.target.value)} required />
+          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Testing…' : 'Test Page'}</button>
         </form>
-        <p className="tool-description">Test whether a webpage is properly optimized for mobile devices and identify specific usability issues.</p>
-        {result && (
-          <div className="result-box">
-            <div className="result-score" style={{ color: result.isMobileFriendly ? '#10B981' : '#EF4444' }}>
-              {result.isMobileFriendly ? '✓ Mobile-Friendly' : '✗ Not Mobile-Friendly'}
-            </div>
-            <div className="result-grid">
-              {[
-                { label: 'Viewport Meta Tag', value: result.viewportSet },
-                { label: 'Text Readable Without Zoom', value: result.textReadable },
-                { label: 'Tap Targets Properly Sized', value: result.tapTargetsOk, warn: `${result.tapTargetIssues} issues found` },
-                { label: 'Content Fits Screen Width', value: result.contentWidthOk },
-                { label: 'No Flash Content', value: !result.usesFlash },
-              ].map(item => (
-                <div key={item.label} className="result-item">
-                  <span className="result-label">{item.label}</span>
-                  <span style={{ color: item.value ? '#10B981' : '#EF4444', fontWeight: 600 }}>
-                    {item.value ? '✓ Pass' : `✗ Fail${item.warn ? ` — ${item.warn}` : ''}`}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <p className="tool-description">
+          We fetch the page using a Pixel 7 user-agent and analyse the HTML for the signals that decide
+          mobile friendliness — viewport configuration, image responsiveness, fixed-width containers,
+          tap-target hints, web app manifest, and input types.
+        </p>
+
+        {error && <div className="result-error">{error}</div>}
+        {data && !data.error && <ResultBlock data={data} />}
       </div>
-      <div style={{ marginTop: '4rem' }}>
-        <article className="tool-article">
-          <h2>Mobile-Friendly Websites: Why Mobile Optimization Is Now an Absolute Non-Negotiable</h2>
-          <p>The shift to mobile has been dramatic and decisive. Global mobile traffic overtook desktop traffic for the first time back in 2016, and since then the gap has only widened. For most industries, 55-70% of website visits now come from mobile devices. Google responded to this reality in 2019 by switching to mobile-first indexing — meaning it primarily uses the mobile version of your website's content for indexing and ranking purposes, regardless of what the desktop version looks like.</p>
-          <p>The practical implication is stark: if your site isn't properly optimized for mobile, you're not just delivering a poor experience to a majority of your visitors — you're actively hurting your search engine rankings. Mobile optimization has gone from a nice-to-have to a hard prerequisite for competitive organic performance.</p>
-          <h3>The Viewport Meta Tag: The Foundation of Mobile Design</h3>
-          <p>The viewport meta tag is the foundational building block of mobile-friendly web design. Without it, mobile browsers render your page at a full desktop width (typically 980 pixels) and then shrink it to fit the screen, resulting in tiny, unreadable text and microscopic tap targets. The standard viewport declaration <code>content="width=device-width, initial-scale=1"</code> tells the browser to set the page width equal to the device screen width and start at 100% zoom. This is step zero for any mobile-friendly page.</p>
-          <h3>Text Readability and Font Sizes</h3>
-          <p>Google recommends a minimum font size of 16 pixels for body text on mobile pages. Text smaller than this requires users to pinch and zoom to read it, which creates friction and signals poor mobile design. More broadly, line lengths should be comfortable for mobile reading — typically 60-80 characters per line. Contrast ratios matter more on mobile screens in variable lighting conditions, so make sure your text-to-background color contrast meets accessibility standards (WCAG 2.1 recommends a minimum ratio of 4.5:1 for body text).</p>
-          <h3>Tap Target Sizing</h3>
-          <p>Tap targets — links, buttons, form fields, and any other interactive elements — need to be large enough to tap accurately with a fingertip. Google recommends a minimum tap target size of 48x48 pixels with sufficient spacing between adjacent targets. Targets that are too small or too closely spaced lead to accidental taps, user frustration, and ultimately higher bounce rates. Navigation menus are a particularly common culprit — mobile hamburger menus where the individual links are packed too closely together create a poor experience on smaller devices.</p>
-          <h3>Content Width and Horizontal Scrolling</h3>
-          <p>Content that requires horizontal scrolling on mobile is a fundamental usability failure. It usually happens when images have fixed pixel widths wider than the viewport, when tables don't have responsive overflow handling, or when content is positioned absolutely without accounting for smaller screen sizes. All major content should be contained within the viewport width using CSS techniques like <code>max-width: 100%</code> for images and flexbox or grid for layout elements.</p>
-          <h3>Google's Mobile-First Indexing: What It Actually Means for You</h3>
-          <p>Mobile-first indexing doesn't mean Google only indexes mobile pages — it means the mobile version of your page is what Google uses to determine ranking. If your desktop site has rich content but your mobile site hides sections, lazy-loads critical text, or removes schema markup, Google evaluates the stripped-down mobile version. The practical takeaway is that your mobile and desktop experiences should be functionally equivalent in terms of content, structured data, and internal links. Use our Mobile Friendly Checker to quickly audit any URL and get a clear breakdown of which specific mobile usability factors are passing and which need attention.</p>
-        </article>
-      </div>
+      <div style={{ marginTop: '4rem' }}><Article /></div>
     </div>
+  );
+}
+
+function ResultBlock({ data }) {
+  const { verdict, summary, checks, signals } = data;
+  const banner = verdict === 'not-mobile-friendly' ? 'danger' : verdict === 'mostly-friendly' ? 'warning' : 'success';
+  const bannerText =
+    verdict === 'mobile-friendly' ? 'Mobile-friendly — no blocking issues' :
+    verdict === 'mostly-friendly' ? 'Mostly mobile-friendly — some warnings' :
+    'Not mobile-friendly — needs fixes';
+
+  return (
+    <div className="result-box">
+      <div className={`result-banner ${banner}`}>
+        <strong>{bannerText}</strong>
+        <span>· {summary.pass} pass · {summary.warn} warn · {summary.fail} fail · {summary.info} info</span>
+      </div>
+
+      <div className="mf-preview-wrap">
+        <div className="mf-preview-frame">
+          <div className="mf-preview-notch" />
+          <div className="mf-preview-screen">
+            <div className="mf-viewport-line">
+              <strong>viewport</strong>
+              <code>{signals.viewportContent || '— missing —'}</code>
+            </div>
+            <ul className="mf-feature-list">
+              <li className={signals.viewport?.width === 'device-width' ? 'ok' : 'no'}>device-width</li>
+              <li className={signals.themeColor ? 'ok' : 'no'}>theme-color</li>
+              <li className={signals.hasTouchIcon ? 'ok' : 'no'}>apple-touch-icon</li>
+              <li className={signals.hasManifest ? 'ok' : 'no'}>web manifest</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mf-summary">
+          <h3 className="result-section-title" style={{ marginTop: 0 }}>Signals</h3>
+          <div className="result-grid">
+            <div className="result-item"><span className="result-label">Images (total)</span><span className="result-value">{signals.images.total}</span></div>
+            <div className="result-item"><span className="result-label">Images with srcset</span><span className="result-value">{signals.images.withSrcset}</span></div>
+            <div className="result-item"><span className="result-label">Fixed-width images</span><span className="result-value">{signals.images.fixedWidth}</span></div>
+            <div className="result-item"><span className="result-label">Fixed-width containers</span><span className="result-value">{signals.fixedWidthContainers}</span></div>
+            <div className="result-item"><span className="result-label">Inputs (good types)</span><span className="result-value">{signals.inputs.good} / {signals.inputs.total}</span></div>
+            <div className="result-item"><span className="result-label">Flash objects</span><span className="result-value">{signals.flashCount}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 className="result-section-title">Findings</h3>
+      <ul className="og-check-list">
+        {checks.map((c, idx) => (
+          <li key={idx} className={`og-check-row sev-${c.severity}`}>
+            <span className={`og-check-icon sev-${c.severity}`}>{SEV_ICON[c.severity]}</span>
+            <div className="og-check-body">
+              <div className="og-check-head"><span className={`og-check-label sev-${c.severity}`}>{SEV_LABEL[c.severity]}</span></div>
+              <div className="og-check-message">{c.message}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Article() {
+  return (
+    <article className="tool-article">
+      <h2>Mobile-First Means More Than Responsive</h2>
+      <p>Google has been mobile-first indexing for years now: the mobile version of your page is the one Googlebot evaluates. A site that looks great on desktop but renders at desktop width on phones with overflowing tables and 8-pixel text will rank as poorly as if it were broken outright.</p>
+      <h3>Signals that matter</h3>
+      <ul>
+        <li><strong>Viewport meta with width=device-width.</strong> Without it the browser assumes a 980px desktop layout.</li>
+        <li><strong>Responsive images.</strong> srcset/sizes serve appropriately sized assets for each device.</li>
+        <li><strong>No fixed-width containers.</strong> A single <code>width: 1200px</code> can break the entire layout.</li>
+        <li><strong>Input types.</strong> Using <code>type=&quot;email&quot;</code> or <code>tel</code> shows a friendlier mobile keyboard.</li>
+        <li><strong>Touch icons and theme-color.</strong> Polish for installed/pinned web apps.</li>
+      </ul>
+      <h3>Limitations of static analysis</h3>
+      <p>This tool reads the served HTML — it does not run JavaScript. If your layout is built entirely in client-side React or by a framework that hydrates after load, the signals above may live in inline styles or runtime CSS instead. Consider this a fast first-pass; pair it with Chrome DevTools and Lighthouse for the full picture.</p>
+    </article>
   );
 }

@@ -1,62 +1,63 @@
 "use client";
 
 import { useState } from 'react';
+import { CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
 export default function OnPageSEO() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleCheck = async (e) => {
     e.preventDefault();
-    if (!url) return;
+    if (!url.trim()) return;
     setLoading(true);
-    setResult(null);
-    await new Promise(r => setTimeout(r, 1200));
-    setResult({
-      title: 'Homepage | Example Company',
-      titleLength: 28,
-      description: 'We build amazing products for your business.',
-      descriptionLength: 46,
-      h1Count: 1,
-      h2Count: 4,
-      imagesWithoutAlt: 3,
-      wordCount: 820,
-      score: 74,
-    });
-    setLoading(false);
+    setData(null);
+    setError(null);
+    try {
+      const res = await fetch('/api/tools/on-page-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) setError(json.error || 'Something went wrong.');
+      else setData(json);
+    } catch {
+      setError('Network error — could not reach the checker service.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div>
-      <div className="tool-header">
-        <h1>On-Page SEO Checker</h1>
-      </div>
+      <div className="tool-header"><h1>On-Page SEO Checker</h1></div>
 
       <div className="tool-card">
         <form className="search-bar" onSubmit={handleCheck}>
-          <input type="url" placeholder="Enter website URL..." className="search-input" value={url} onChange={e => setUrl(e.target.value)} required />
-          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Analyzing...' : 'Analyze'}</button>
+          <input
+            type="text"
+            inputMode="url"
+            placeholder="Enter page URL (e.g. example.com/about)"
+            className="search-input"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            required
+          />
+          <button type="submit" className="check-btn" disabled={loading}>
+            {loading ? 'Analyzing...' : 'Analyze'}
+          </button>
         </form>
-        <p className="tool-description">Analyze the on-page SEO elements of any webpage — titles, meta descriptions, headings, images, and more.</p>
+        <p className="tool-description">
+          Fetches the page and runs ~17 on-page SEO checks: title, meta description, headings, images,
+          canonical, viewport, language, Open Graph, Twitter Card, structured data, indexability, content length,
+          and more. Returns a weighted 0–100 score with per-check explanations.
+        </p>
 
-        {result && (
-          <div className="result-box">
-            <div className="result-score" style={{ color: result.score >= 80 ? '#10B981' : result.score >= 50 ? '#F59E0B' : '#EF4444' }}>
-              SEO Score: {result.score}/100
-            </div>
-            <div className="result-grid">
-              <div className="result-item"><span className="result-label">Page Title</span><span className="result-value">{result.title}</span></div>
-              <div className="result-item"><span className="result-label">Title Length</span><span className="result-value" style={{ color: result.titleLength < 60 ? '#10B981' : '#EF4444' }}>{result.titleLength} chars</span></div>
-              <div className="result-item"><span className="result-label">Meta Description</span><span className="result-value">{result.description}</span></div>
-              <div className="result-item"><span className="result-label">Description Length</span><span className="result-value" style={{ color: result.descriptionLength <= 160 ? '#10B981' : '#EF4444' }}>{result.descriptionLength} chars</span></div>
-              <div className="result-item"><span className="result-label">H1 Tags</span><span className="result-value" style={{ color: result.h1Count === 1 ? '#10B981' : '#EF4444' }}>{result.h1Count}</span></div>
-              <div className="result-item"><span className="result-label">H2 Tags</span><span className="result-value">{result.h2Count}</span></div>
-              <div className="result-item"><span className="result-label">Images Missing Alt</span><span className="result-value" style={{ color: result.imagesWithoutAlt === 0 ? '#10B981' : '#F59E0B' }}>{result.imagesWithoutAlt}</span></div>
-              <div className="result-item"><span className="result-label">Word Count</span><span className="result-value">{result.wordCount}</span></div>
-            </div>
-          </div>
-        )}
+        {error && <div className="result-error">{error}</div>}
+        {data && <ResultBlock data={data} />}
       </div>
 
       <div style={{ marginTop: '4rem' }}>
@@ -94,4 +95,166 @@ export default function OnPageSEO() {
       </div>
     </div>
   );
+}
+
+function ResultBlock({ data }) {
+  const score = data.score;
+  const color = score >= 80 ? '#10B981' : score >= 50 ? '#F59E0B' : '#EF4444';
+  const label = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Needs work' : 'Poor';
+
+  return (
+    <div className="result-box">
+      <div className="score-dial">
+        <div
+          className="score-circle"
+          style={{ '--score': score, '--color': color }}
+        >
+          <div className="score-circle-text">
+            {score}
+            <small>/ 100</small>
+          </div>
+        </div>
+        <div className="score-summary">
+          <div style={{ fontSize: '1.25rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+            {label}
+          </div>
+          <div className="score-counts">
+            <div className="score-count">
+              <span className="score-count-dot pass" /> {data.counts.passed} passed
+            </div>
+            <div className="score-count">
+              <span className="score-count-dot warn" /> {data.counts.warnings} warnings
+            </div>
+            <div className="score-count">
+              <span className="score-count-dot fail" /> {data.counts.failed} failed
+            </div>
+          </div>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+            {data.counts.total} checks across {data.checks.length} signals
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="result-section-title">Page Summary</div>
+        <div className="result-grid">
+          <ResultRow label="URL" mono>
+            <a href={data.url} target="_blank" rel="noreferrer" className="sitemap-link">{data.url}</a>
+          </ResultRow>
+          {data.finalUrl !== data.url && <ResultRow label="Final URL" mono>{data.finalUrl}</ResultRow>}
+          <ResultRow label="HTTP Status">
+            <strong>{data.httpStatus}</strong>
+          </ResultRow>
+          <ResultRow label="Title">{data.signals.title || <Italic>Missing</Italic>}</ResultRow>
+          <ResultRow label="Meta description">
+            {data.signals.description ? (
+              <span style={{ display: 'block', textAlign: 'right' }}>{data.signals.description}</span>
+            ) : <Italic>Missing</Italic>}
+          </ResultRow>
+          <ResultRow label="H1 / H2 / H3">
+            {data.signals.headings.h1Count} / {data.signals.headings.h2Count} / {data.signals.headings.h3Count}
+          </ResultRow>
+          <ResultRow label="Images (missing alt)">
+            <span>
+              {data.signals.images.total}{' '}
+              {data.signals.images.missingAlt > 0 && (
+                <span style={{ color: '#EF4444', fontWeight: 600 }}>
+                  ({data.signals.images.missingAlt} missing alt)
+                </span>
+              )}
+            </span>
+          </ResultRow>
+          <ResultRow label="Word count">{data.signals.wordCount.toLocaleString()}</ResultRow>
+          <ResultRow label="Links (internal/external)">
+            {data.signals.links.internal} / {data.signals.links.external}
+          </ResultRow>
+          <ResultRow label="Canonical" mono>
+            {data.signals.canonical || <Italic>Not declared</Italic>}
+          </ResultRow>
+          <ResultRow label="Lang">
+            {data.signals.htmlLang || <Italic>Not set</Italic>}
+          </ResultRow>
+          <ResultRow label="Viewport">
+            <Mono>{data.signals.viewport || 'Not set'}</Mono>
+          </ResultRow>
+          {data.signals.jsonld.length > 0 && (
+            <ResultRow label="Structured data">
+              <div className="tag-cloud">
+                {[...new Set(data.signals.jsonld.flatMap((b) => b.types))].map((t) => (
+                  <span key={t} className="ua-chip">{t}</span>
+                ))}
+              </div>
+            </ResultRow>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div className="result-section-title">Checks ({data.checks.length})</div>
+        <div className="check-list">
+          {data.checks.map((c, i) => {
+            const Icon = c.severity === 'pass' ? CheckCircle2 : c.severity === 'warn' ? AlertTriangle : XCircle;
+            return (
+              <div key={i} className="check-row">
+                <Icon size={18} className={`check-icon ${c.severity}`} />
+                <div className="check-body">
+                  <div className="check-name">{c.name}</div>
+                  <div className="check-message">{c.message}</div>
+                  {c.detail && <div className="check-detail">{c.detail}</div>}
+                </div>
+                <div className="check-weight">w {c.weight}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {(Object.keys(data.signals.openGraph).length > 0 || Object.keys(data.signals.twitterCard).length > 0) && (
+        <div>
+          <div className="result-section-title">Social Tags</div>
+          <div className="result-grid">
+            {Object.entries(data.signals.openGraph).map(([k, v]) => (
+              <ResultRow key={k} label={k}><Mono>{v}</Mono></ResultRow>
+            ))}
+            {Object.entries(data.signals.twitterCard).map(([k, v]) => (
+              <ResultRow key={k} label={k}><Mono>{v}</Mono></ResultRow>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {data.redirectChain && data.redirectChain.length > 1 && (
+        <div>
+          <div className="result-section-title">Redirect Chain</div>
+          <div className="redirect-chain">
+            {data.redirectChain.map((hop, i) => (
+              <div key={`${hop.url}-${i}`} className="redirect-hop">
+                <span className="redirect-hop-status">{hop.status}</span>
+                <span>{hop.url}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ResultRow({ label, children, mono = false }) {
+  return (
+    <div className="result-item">
+      <span className="result-label">{label}</span>
+      <span className={`result-value ${mono ? 'result-value-mono' : ''}`}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function Mono({ children }) {
+  return <code style={{ fontFamily: "'Roboto Mono', monospace", fontSize: '0.8125rem' }}>{children}</code>;
+}
+
+function Italic({ children }) {
+  return <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>{children}</span>;
 }

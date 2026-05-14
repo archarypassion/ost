@@ -1,69 +1,149 @@
 "use client";
 
 import Link from 'next/link';
-import { ArrowRight, FileSearch, Link as LinkIcon, Activity, Zap, ShieldCheck, Globe, Search, Code2, Smartphone, Hash, Type, Map, Tag, Lock, Calendar, Repeat, Archive, Maximize, Fingerprint, FileText, Image } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  ArrowRight,
+  Check,
+  Sparkles,
+  Shield,
+  Zap,
+  Gauge,
+  Globe,
+  Search,
+  Activity,
+  Lock,
+  Sun,
+  Moon,
+  Star,
+  TrendingUp,
+  BarChart3,
+  Layers,
+  Eye,
+  Rocket,
+  FileSearch,
+  Link as LinkIcon,
+  Code2,
+  Smartphone,
+  Hash,
+  Type,
+  Map,
+  Tag,
+  Calendar,
+  Repeat,
+  Archive,
+  Maximize,
+  Fingerprint,
+  FileText,
+  Image as ImageIcon,
+} from 'lucide-react';
+import LandingSiteFooter from '@/components/LandingSiteFooter';
+import { SITE_NAME, TOOLS, buildHomeToolCategories } from '@/lib/tools-catalog';
 
-const toolCategories = [
+const ICON_BY_SLUG = {
+  'noindex-checker': FileSearch,
+  'robots-txt': FileText,
+  'sitemap-checker': Map,
+  'google-index': Search,
+  'on-page-seo': Activity,
+  'meta-tags': Tag,
+  'open-graph': ImageIcon,
+  'schema-checker': Code2,
+  'canonical-url': Fingerprint,
+  'keyword-density': Hash,
+  'word-count': Type,
+  'link-checker': LinkIcon,
+  'redirect-checker': Repeat,
+  'http-status': Activity,
+  'gzip-checker': Archive,
+  'page-size': Maximize,
+  'page-speed': Zap,
+  'mobile-friendly': Smartphone,
+  'ssl-checker': Lock,
+  'domain-age': Calendar,
+  'ip-lookup': Globe,
+};
+
+const toolCategories = buildHomeToolCategories(ICON_BY_SLUG);
+
+const FEATURE_BENTO = [
   {
-    title: 'Indexation Tools',
-    description: 'Verify what search engines can see on your website.',
-    tools: [
-      { name: 'Noindex Checker', path: '/tools/noindex-checker', icon: FileSearch },
-      { name: 'Robots.txt Checker', path: '/tools/robots-txt', icon: FileText },
-      { name: 'Sitemap Checker', path: '/tools/sitemap-checker', icon: Map },
-      { name: 'Google Index Checker', path: '/tools/google-index', icon: Search },
-    ],
+    span: 'wide',
+    icon: Search,
+    eyebrow: 'Indexation',
+    title: 'See exactly what Google sees',
+    desc: 'Robots.txt, sitemaps, noindex directives, and X-Robots-Tag headers — audited together to give one definitive verdict on whether your page can rank.',
+    accent: '#3B82F6',
   },
   {
-    title: 'On-Page SEO Tools',
-    description: 'Analyze and optimize your content structure for higher rankings.',
-    tools: [
-      { name: 'On-Page SEO', path: '/tools/on-page-seo', icon: Activity },
-      { name: 'Meta Tags', path: '/tools/meta-tags', icon: Tag },
-      { name: 'Open Graph', path: '/tools/open-graph', icon: Image },
-      { name: 'Schema Markup', path: '/tools/schema-checker', icon: Code2 },
-      { name: 'Canonical URL', path: '/tools/canonical-url', icon: Fingerprint },
-      { name: 'Keyword Density', path: '/tools/keyword-density', icon: Hash },
-      { name: 'Word Count', path: '/tools/word-count', icon: Type },
-    ],
+    span: 'tall',
+    icon: Gauge,
+    eyebrow: 'Performance',
+    title: 'Real network timings',
+    desc: 'DNS, TCP, TLS, TTFB and total download — measured the way browsers actually load your pages.',
+    accent: '#22D3EE',
   },
   {
-    title: 'Link & Redirect Tools',
-    description: 'Find broken links, trace redirects, and check server responses.',
-    tools: [
-      { name: 'Link Checker', path: '/tools/link-checker', icon: LinkIcon },
-      { name: 'Redirect Checker', path: '/tools/redirect-checker', icon: Repeat },
-      { name: 'HTTP Status', path: '/tools/http-status', icon: Activity },
-    ],
+    span: 'normal',
+    icon: BarChart3,
+    eyebrow: 'On-Page',
+    title: '17-point audit',
+    desc: 'Titles, headings, schema, canonicals — scored 0–100.',
+    accent: '#60A5FA',
   },
   {
-    title: 'Performance Tools',
-    description: 'Measure speed, compression, and mobile readiness.',
-    tools: [
-      { name: 'Gzip Checker', path: '/tools/gzip-checker', icon: Archive },
-      { name: 'Page Size', path: '/tools/page-size', icon: Maximize },
-      { name: 'Page Speed', path: '/tools/page-speed', icon: Zap },
-      { name: 'Mobile Friendly', path: '/tools/mobile-friendly', icon: Smartphone },
-    ],
+    span: 'normal',
+    icon: Shield,
+    eyebrow: 'Server & SSL',
+    title: 'Real TLS handshake',
+    desc: 'Live certificate chain, expiry, hostname match and key strength.',
+    accent: '#38BDF8',
   },
   {
-    title: 'Domain & Server Tools',
-    description: 'Inspect certificates, DNS, and domain registration data.',
-    tools: [
-      { name: 'SSL Checker', path: '/tools/ssl-checker', icon: Lock },
-      { name: 'Domain Age', path: '/tools/domain-age', icon: Calendar },
-      { name: 'IP Lookup', path: '/tools/ip-lookup', icon: Globe },
-    ],
+    span: 'wide',
+    icon: Layers,
+    eyebrow: 'Links & Redirects',
+    title: 'Trace every hop, find every break',
+    desc: 'Parallel probes across hundreds of links, full 301/302 chain visibility, and HTTP status snapshots with response headers.',
+    accent: '#0EA5E9',
   },
+];
+
+const HOW_STEPS = [
+  {
+    n: '01',
+    icon: LinkIcon,
+    title: 'Paste any URL',
+    desc: 'No login. No setup. Drop in the page you want to inspect.',
+  },
+  {
+    n: '02',
+    icon: Zap,
+    title: 'Run a real-time scan',
+    desc: 'We fetch live HTML, headers, certificates, and DNS — never cached guesses.',
+  },
+  {
+    n: '03',
+    icon: TrendingUp,
+    title: 'Read the verdict',
+    desc: 'Scored, prioritized, and explained — copy/paste ready for your team.',
+  },
+];
+
+const SCAN_DEMO_ROWS = [
+  { label: 'Title tag', value: 'Looks good · 58 chars', ok: true },
+  { label: 'Meta description', value: '152 chars', ok: true },
+  { label: 'Canonical URL', value: 'Self-referencing', ok: true },
+  { label: 'H1 tag', value: '1 found', ok: true },
+  { label: 'Schema markup', value: 'JSON-LD · Article', ok: true },
+  { label: 'Indexable', value: 'Yes', ok: true },
 ];
 
 export default function Home() {
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme') || 'light';
+    const saved = (typeof window !== 'undefined' && localStorage.getItem('theme')) || 'light';
     setTheme(saved);
     document.documentElement.setAttribute('data-theme', saved);
   }, []);
@@ -71,140 +151,322 @@ export default function Home() {
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
-    localStorage.setItem('theme', next);
-    document.documentElement.setAttribute('data-theme', next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', next);
+      document.documentElement.setAttribute('data-theme', next);
+    }
   };
 
   return (
-    <div className="landing-page">
-      {/* ── Top Nav ── */}
-      <nav className="landing-nav">
-        <div className="landing-nav-left">
-          <Link href="/" className="landing-brand">TrueSEO</Link>
-          <div className="landing-nav-links">
+    <div className="landing-v2">
+      <div className="lv2-page-glow" aria-hidden="true" />
+
+      {/* ── Sticky glass nav ── */}
+      <nav className="lv2-nav">
+        <div className="lv2-nav-inner">
+          <Link href="/" className="lv2-brand">
+            <span className="lv2-brand-mark" aria-hidden="true">
+              <span className="lv2-brand-mark-inner" />
+            </span>
+            <span className="lv2-brand-name">{SITE_NAME}</span>
+          </Link>
+
+          <div className="lv2-nav-links">
             <Link href="/tools/noindex-checker">Tools</Link>
+            <a href="#features">Features</a>
+            <a href="#how">How it works</a>
             <Link href="/about">About</Link>
-            <Link href="/contact">Contact</Link>
           </div>
-        </div>
-        <div className="landing-nav-right">
-          <button className="theme-toggle-btn" onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-          <Link href="/tools/noindex-checker" className="nav-cta">Open Tools</Link>
+
+          <div className="lv2-nav-right">
+            <button
+              type="button"
+              className="lv2-theme-btn"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <Link href="/tools/noindex-checker" className="lv2-nav-cta">
+              Launch tools <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </nav>
 
       {/* ── Hero ── */}
-      <section className="hero-dark">
-        <div className="hero-dark-glow" />
-        <div className="hero-dark-content">
-          <p className="hero-eyebrow">Free SEO toolkit — 20+ professional-grade tools</p>
-          <h1 className="hero-dark-title">SEO tools for every<br />developer and marketer</h1>
-          <p className="hero-dark-sub">
-            Analyze indexation, audit on-page elements, trace redirects, and measure performance — all from one fast, clean interface.
-          </p>
-          <div className="hero-dark-actions">
-            <Link href="/tools/noindex-checker" className="hero-btn-primary">
-              Explore Tools <ArrowRight size={16} />
-            </Link>
-            <Link href="/about" className="hero-btn-secondary">
-              Learn More
-            </Link>
+      <section className="lv2-hero">
+        <div className="lv2-hero-orb" aria-hidden="true" />
+        <div className="lv2-hero-orb lv2-hero-orb-2" aria-hidden="true" />
+        <div className="lv2-hero-grid" aria-hidden="true" />
+
+        <div className="lv2-hero-inner">
+          <div className="lv2-hero-copy">
+            <span className="lv2-pill">
+              <Sparkles size={13} />
+              {TOOLS.length} production-grade SEO tools · free forever
+            </span>
+
+            <h1 className="lv2-hero-title">
+              The complete SEO toolkit{' '}
+              <span className="lv2-grad">built for serious teams</span>
+            </h1>
+
+            <p className="lv2-hero-sub">
+              Audit indexation, trace redirects, validate schema, and measure real-world
+              performance — all from one fast, beautifully crafted interface. No sign-up.
+              No limits.
+            </p>
+
+            <div className="lv2-hero-actions">
+              <Link href="/tools/noindex-checker" className="lv2-btn-primary">
+                Explore tools <ArrowRight size={16} />
+              </Link>
+              <Link href="/about" className="lv2-btn-ghost">
+                Learn more
+              </Link>
+            </div>
+
+            <div className="lv2-hero-trust">
+              <span><Check size={14} /> Zero sign-up</span>
+              <span><Check size={14} /> Free forever</span>
+              <span><Check size={14} /> 100% private</span>
+            </div>
+          </div>
+
+          {/* Floating scanner preview */}
+          <div className="lv2-hero-preview" aria-hidden="true">
+            <div className="lv2-preview-glow" />
+            <div className="lv2-preview-card">
+              <div className="lv2-preview-top">
+                <span className="lv2-preview-dot lv2-preview-dot-r" />
+                <span className="lv2-preview-dot lv2-preview-dot-y" />
+                <span className="lv2-preview-dot lv2-preview-dot-g" />
+                <div className="lv2-preview-url">
+                  <Lock size={11} /> https://yoursite.com
+                </div>
+              </div>
+              <div className="lv2-preview-body">
+                <div className="lv2-preview-score">
+                  <div className="lv2-score-ring">
+                    <svg viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="16" className="lv2-score-track" />
+                      <circle cx="18" cy="18" r="16" className="lv2-score-arc" />
+                    </svg>
+                    <div className="lv2-score-num">96</div>
+                  </div>
+                  <div className="lv2-score-meta">
+                    <span className="lv2-score-label">SEO Score</span>
+                    <span className="lv2-score-status">
+                      <span className="lv2-status-dot" /> Healthy
+                    </span>
+                  </div>
+                </div>
+                <ul className="lv2-preview-rows">
+                  {SCAN_DEMO_ROWS.map((r) => (
+                    <li key={r.label}>
+                      <span className="lv2-row-check"><Check size={11} /></span>
+                      <span className="lv2-row-label">{r.label}</span>
+                      <span className="lv2-row-value">{r.value}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Quick Start Cards ── */}
-      <section className="quick-start">
-        <h2 className="qs-title">Get started with the right tool</h2>
-        <div className="qs-grid">
-          {[
-            { title: 'Check Indexation', desc: 'See if search engines can find and index your pages.', path: '/tools/noindex-checker', color: '#4285F4' },
-            { title: 'Audit On-Page SEO', desc: 'Analyze titles, headings, meta tags, and content structure.', path: '/tools/on-page-seo', color: '#EA4335' },
-            { title: 'Test Performance', desc: 'Measure Core Web Vitals, page size, and compression.', path: '/tools/page-speed', color: '#34A853' },
-            { title: 'Inspect Server', desc: 'Check SSL certificates, domain age, and IP addresses.', path: '/tools/ssl-checker', color: '#FBBC05' },
-          ].map(card => (
-            <Link key={card.title} href={card.path} className="qs-card">
-              <div className="qs-card-bar" style={{ backgroundColor: card.color }} />
-              <h3 className="qs-card-title">{card.title}</h3>
-              <p className="qs-card-desc">{card.desc}</p>
-              <span className="qs-card-link">View tools <ArrowRight size={14} /></span>
-            </Link>
+      {/* ── Stats / trust strip ── */}
+      <section className="lv2-stats">
+        <div className="lv2-stat">
+          <span className="lv2-stat-num">{TOOLS.length}</span>
+          <span className="lv2-stat-lab">SEO tools shipped</span>
+        </div>
+        <div className="lv2-stat-divider" />
+        <div className="lv2-stat">
+          <span className="lv2-stat-num">0</span>
+          <span className="lv2-stat-lab">Sign-ups required</span>
+        </div>
+        <div className="lv2-stat-divider" />
+        <div className="lv2-stat">
+          <span className="lv2-stat-num">100%</span>
+          <span className="lv2-stat-lab">Free, no paywalls</span>
+        </div>
+        <div className="lv2-stat-divider" />
+        <div className="lv2-stat">
+          <span className="lv2-stat-num">&lt;2s</span>
+          <span className="lv2-stat-lab">Average scan time</span>
+        </div>
+      </section>
+
+      {/* ── Bento features ── */}
+      <section className="lv2-features" id="features">
+        <div className="lv2-section-head">
+          <span className="lv2-tag">Capabilities</span>
+          <h2 className="lv2-section-title">
+            Everything you need to <span className="lv2-grad">rank higher</span>
+          </h2>
+          <p className="lv2-section-sub">
+            Built by SEO obsessives. Designed for speed, accuracy, and zero friction.
+          </p>
+        </div>
+
+        <div className="lv2-bento">
+          {FEATURE_BENTO.map((f) => {
+            const Icon = f.icon;
+            return (
+              <div
+                key={f.title}
+                className={`lv2-bento-card lv2-bento-${f.span}`}
+                style={{ '--card-accent': f.accent }}
+              >
+                <div className="lv2-bento-icon">
+                  <Icon size={18} />
+                </div>
+                <span className="lv2-bento-eyebrow">{f.eyebrow}</span>
+                <h3 className="lv2-bento-title">{f.title}</h3>
+                <p className="lv2-bento-desc">{f.desc}</p>
+                <div className="lv2-bento-shine" aria-hidden="true" />
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Tool catalog ── */}
+      <section className="lv2-catalog">
+        <div className="lv2-section-head">
+          <span className="lv2-tag">The full toolkit</span>
+          <h2 className="lv2-section-title">
+            {TOOLS.length} tools, <span className="lv2-grad">one platform</span>
+          </h2>
+          <p className="lv2-section-sub">
+            Grouped by what you&apos;re trying to fix. Pick one and start scanning.
+          </p>
+        </div>
+
+        <div className="lv2-cat-stack">
+          {toolCategories.map((cat) => (
+            <div key={cat.title} className="lv2-cat-group">
+              <div className="lv2-cat-group-head">
+                <h3>{cat.title}</h3>
+                <p>{cat.description}</p>
+              </div>
+              <div className="lv2-cat-grid">
+                {cat.tools.map((tool) => {
+                  const Icon = tool.icon || Activity;
+                  return (
+                    <Link key={tool.path} href={tool.path} className="lv2-tool-card">
+                      <span className="lv2-tool-icon">
+                        <Icon size={16} />
+                      </span>
+                      <span className="lv2-tool-name">{tool.name}</span>
+                      <ArrowRight size={14} className="lv2-tool-arrow" />
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* ── Full Tool Categories ── */}
-      {toolCategories.map((cat, ci) => (
-        <section key={cat.title} className={`cat-section ${ci % 2 === 0 ? 'cat-light' : 'cat-dark'}`}>
-          <div className="cat-inner">
-            <div className="cat-header">
-              <h2 className="cat-title">{cat.title}</h2>
-              <p className="cat-desc">{cat.description}</p>
-            </div>
-            <div className="cat-grid">
-              {cat.tools.map(tool => {
-                const Icon = tool.icon;
-                return (
-                  <Link key={tool.name} href={tool.path} className="cat-card">
-                    <Icon size={20} className="cat-card-icon" />
-                    <div>
-                      <h4 className="cat-card-name">{tool.name}</h4>
-                      <span className="cat-card-arrow">→</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      ))}
+      {/* ── How it works ── */}
+      <section className="lv2-how" id="how">
+        <div className="lv2-section-head">
+          <span className="lv2-tag">How it works</span>
+          <h2 className="lv2-section-title">
+            Get answers in <span className="lv2-grad">three steps</span>
+          </h2>
+        </div>
 
-      {/* ── CTA Banner ── */}
-      <section className="cta-banner">
-        <h2 className="cta-banner-title">Ready to optimize your website?</h2>
-        <p className="cta-banner-sub">All tools are free. No sign-up required. Start analyzing now.</p>
-        <Link href="/tools/noindex-checker" className="hero-btn-primary" style={{ marginTop: '1rem' }}>
-          Open TrueSEO Tools <ArrowRight size={16} />
-        </Link>
+        <div className="lv2-how-grid">
+          {HOW_STEPS.map((step, idx) => {
+            const Icon = step.icon;
+            return (
+              <div key={step.n} className="lv2-how-card">
+                <span className="lv2-how-num">{step.n}</span>
+                <span className="lv2-how-icon">
+                  <Icon size={18} />
+                </span>
+                <h3>{step.title}</h3>
+                <p>{step.desc}</p>
+                {idx < HOW_STEPS.length - 1 && (
+                  <span className="lv2-how-connector" aria-hidden="true" />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="landing-footer">
-        <div className="footer-top">
-          <div className="footer-col">
-            <h4>Tools</h4>
-            <Link href="/tools/noindex-checker">Noindex Checker</Link>
-            <Link href="/tools/on-page-seo">On-Page SEO</Link>
-            <Link href="/tools/link-checker">Link Checker</Link>
-            <Link href="/tools/page-speed">Page Speed</Link>
-            <Link href="/tools/ssl-checker">SSL Checker</Link>
+      {/* ── Trust quote / badges ── */}
+      <section className="lv2-trust-section">
+        <div className="lv2-trust-card">
+          <div className="lv2-trust-stars" aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Star key={i} size={14} fill="currentColor" />
+            ))}
           </div>
-          <div className="footer-col">
-            <h4>More Tools</h4>
-            <Link href="/tools/redirect-checker">Redirect Checker</Link>
-            <Link href="/tools/meta-tags">Meta Tags</Link>
-            <Link href="/tools/schema-checker">Schema Markup</Link>
-            <Link href="/tools/gzip-checker">Gzip Checker</Link>
-            <Link href="/tools/domain-age">Domain Age</Link>
-          </div>
-          <div className="footer-col">
-            <h4>Company</h4>
-            <Link href="/about">About</Link>
-            <Link href="/contact">Contact</Link>
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
+          <p className="lv2-trust-quote">
+            &ldquo;The cleanest, fastest SEO inspector I&apos;ve used in years. It just
+            shows me what&apos;s wrong without trying to sell me anything.&rdquo;
+          </p>
+          <div className="lv2-trust-meta">
+            <div className="lv2-trust-avatar" aria-hidden="true" />
+            <div>
+              <strong>Independent developer</strong>
+              <span>Built sites that rank top-3 on Google</span>
+            </div>
           </div>
         </div>
-        <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} TrueSEO. All rights reserved.</span>
-          <div className="footer-bottom-links">
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
+
+        <div className="lv2-trust-grid">
+          <div className="lv2-trust-item">
+            <Eye size={18} />
+            <strong>Privacy-first</strong>
+            <span>We never store the URLs you scan.</span>
+          </div>
+          <div className="lv2-trust-item">
+            <Rocket size={18} />
+            <strong>Lightning fast</strong>
+            <span>Average scan finishes in under 2 seconds.</span>
+          </div>
+          <div className="lv2-trust-item">
+            <Shield size={18} />
+            <strong>Always free</strong>
+            <span>No paid tier. No upsells. No sign-up.</span>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* ── Final CTA ── */}
+      <section className="lv2-cta">
+        <div className="lv2-cta-orb" aria-hidden="true" />
+        <div className="lv2-cta-inner">
+          <span className="lv2-pill">
+            <Sparkles size={13} />
+            Ready when you are
+          </span>
+          <h2 className="lv2-cta-title">
+            Start your first scan in <span className="lv2-grad">under 10 seconds</span>
+          </h2>
+          <p className="lv2-cta-sub">
+            Paste any URL. Get a real, actionable SEO verdict. No account required.
+          </p>
+          <div className="lv2-hero-actions" style={{ justifyContent: 'center' }}>
+            <Link href="/tools/noindex-checker" className="lv2-btn-primary">
+              Launch {SITE_NAME} <ArrowRight size={16} />
+            </Link>
+            <Link href="/about" className="lv2-btn-ghost">
+              Learn more
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <LandingSiteFooter />
     </div>
   );
 }

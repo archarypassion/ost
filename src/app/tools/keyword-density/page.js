@@ -1,70 +1,161 @@
 "use client";
 import { useState } from 'react';
 
-export default function KeywordDensityChecker() {
+export default function KeywordDensityPage() {
+  const [mode, setMode] = useState('url');
+  const [url, setUrl] = useState('');
   const [text, setText] = useState('');
+  const [excludeStopwords, setExcludeStopwords] = useState(true);
+  const [top, setTop] = useState(20);
+  const [tab, setTab] = useState('unigrams');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleCheck = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    setLoading(true); setResult(null);
-    await new Promise(r => setTimeout(r, 600));
-    const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
-    const stopWords = new Set(['the','a','an','and','or','but','in','on','at','to','for','of','with','by','is','was','are','were','be','been','have','has','had','do','does','did','will','would','could','should','may','might','this','that','these','those','i','we','you','he','she','they','it','its','my','your','his','her','our','their']);
-    const freq = {};
-    words.forEach(w => { if (!stopWords.has(w)) freq[w] = (freq[w] || 0) + 1; });
-    const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 10);
-    setResult({ totalWords: words.length, uniqueWords: Object.keys(freq).length, topKeywords: sorted });
-    setLoading(false);
+    setLoading(true); setData(null); setError(null);
+    try {
+      const body = { mode, top, excludeStopwords, ...(mode === 'text' ? { text } : { url: url.trim() }) };
+      const res = await fetch('/api/tools/keyword-density', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json?.error || `Request failed with status ${res.status}.`);
+        if (json?.finalUrl) setData(json);
+      } else setData(json);
+    } catch (err) { setError(err?.message || 'Something went wrong.'); }
+    finally { setLoading(false); }
   };
 
   return (
     <div>
       <div className="tool-header"><h1>Keyword Density Checker</h1></div>
       <div className="tool-card">
-        <textarea
-          placeholder="Paste your content here to analyze keyword density..."
-          style={{ width: '100%', maxWidth: '780px', minHeight: '160px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '1rem', fontSize: '0.95rem', fontFamily: 'inherit', resize: 'vertical', outline: 'none' }}
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
-        <button className="check-btn" onClick={handleCheck} disabled={loading || !text.trim()}>{loading ? 'Analyzing...' : 'Analyze Keywords'}</button>
-        <p className="tool-description">Paste any text or article content to see the top keywords, their frequency, and density percentage.</p>
-        {result && (
-          <div className="result-box">
-            <div className="result-grid">
-              <div className="result-item"><span className="result-label">Total Words</span><span className="result-value">{result.totalWords}</span></div>
-              <div className="result-item"><span className="result-label">Unique Keywords</span><span className="result-value">{result.uniqueWords}</span></div>
+        <div className="mode-tabs">
+          <button type="button" className={`mode-tab ${mode === 'url' ? 'active' : ''}`} onClick={() => setMode('url')}>Fetch URL</button>
+          <button type="button" className={`mode-tab ${mode === 'text' ? 'active' : ''}`} onClick={() => setMode('text')}>Paste text</button>
+        </div>
+
+        <form onSubmit={submit}>
+          {mode === 'url' ? (
+            <div className="search-bar">
+              <input type="text" placeholder="https://example.com/page" className="search-input" value={url} onChange={(e) => setUrl(e.target.value)} required />
+              <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Analysing…' : 'Analyse'}</button>
             </div>
-            <h4 style={{ color: 'var(--text-primary)', margin: '0.75rem 0 0.5rem' }}>Top Keywords</h4>
-            {result.topKeywords.map(([kw, count], i) => (
-              <div key={kw} className="result-item">
-                <span className="result-label">#{i + 1} {kw}</span>
-                <span style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{count}x</span>
-                  <span className="result-value">{((count / result.totalWords) * 100).toFixed(2)}%</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+          ) : (
+            <>
+              <textarea className="wc-textarea" placeholder="Paste content to analyse…" value={text} onChange={(e) => setText(e.target.value)} required />
+              <button type="submit" className="check-btn" style={{ marginTop: '0.75rem' }} disabled={loading}>{loading ? 'Analysing…' : 'Analyse'}</button>
+            </>
+          )}
+        </form>
+
+        <div className="kd-options">
+          <label className="og-toggle">
+            <input type="checkbox" checked={excludeStopwords} onChange={(e) => setExcludeStopwords(e.target.checked)} />
+            <span>Exclude stopwords (the, and, of, …)</span>
+          </label>
+          <label className="kd-top-label">
+            Top:
+            <select value={top} onChange={(e) => setTop(parseInt(e.target.value, 10))}>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={30}>30</option>
+              <option value={50}>50</option>
+            </select>
+          </label>
+        </div>
+
+        <p className="tool-description">
+          See the most-used words and phrases on any page or text. Density is the percentage each term
+          contributes to the total — useful for spotting keyword stuffing or for understanding what a
+          page is really about. Bigrams and trigrams reveal the natural phrases your content emphasises.
+        </p>
+
+        {error && <div className="result-error">{error}</div>}
+        {data && !data.error && <ResultBlock data={data} tab={tab} setTab={setTab} />}
       </div>
-      <div style={{ marginTop: '4rem' }}>
-        <article className="tool-article">
-          <h2>Keyword Density: What It Is, Why It Still Matters, and How Not to Obsess Over It</h2>
-          <p>Keyword density is the percentage of times a specific word or phrase appears in a piece of content relative to the total word count. If you write a 1,000-word article and your target keyword appears 10 times, the density for that keyword is 1%. It's a simple concept, and for a long period in SEO history — roughly the late 1990s through the early 2010s — it was treated as a primary ranking signal. Stuff your keyword in as many times as possible, the thinking went, and you'd rank higher. That era is long over, but keyword density as a concept still matters — just in a more nuanced way.</p>
-          <h3>The Death of Keyword Stuffing</h3>
-          <p>Google's Panda algorithm update in 2011 was specifically designed to target low-quality content, and keyword stuffing was one of its primary targets. Pages that repeated the same keyword dozens of times in clearly unnatural ways were penalized or removed from search results entirely. The algorithm forced a shift toward writing for humans rather than search engines — a shift that, in retrospect, was long overdue.</p>
-          <p>Today, stuffing keywords is not just ineffective — it's actively harmful. Google's systems are sophisticated enough to detect when keyword repetition reads as spammy or manipulative, and they'll suppress that content accordingly. More importantly, readers notice too. Content that feels awkwardly repetitive is off-putting and increases bounce rates.</p>
-          <h3>What a Healthy Keyword Density Looks Like</h3>
-          <p>There's no universally agreed-upon "perfect" keyword density, and Google has said as much. Generally, an organic density somewhere in the range of 1-2% for a primary keyword tends to feel natural in most content. Some SEOs suggest 0.5-1.5% as a conservative target. But the honest answer is: write naturally, include your keyword where it makes sense, and don't count occurrences manually. If it reads well to a human being, it's probably fine.</p>
-          <p>What matters far more than density is whether you're covering the topic comprehensively. Google evaluates topical depth by looking at the related terms, entities, and concepts present in your content — not just how many times the exact target keyword appears. This concept, sometimes called TF-IDF (Term Frequency-Inverse Document Frequency), means you should think about naturally incorporating semantically related terms rather than repeating the same phrase over and over.</p>
-          <h3>Using Keyword Density Analysis Productively</h3>
-          <p>The best use of a keyword density checker isn't to hit a specific target number — it's to audit for extremes. If a keyword appears only once in a 2,000-word article, you might want to work it in a few more times naturally. If a keyword appears 30 times in 500 words, that's a red flag worth fixing. Our Keyword Density Checker also shows you which other words are appearing most frequently in your content, which is genuinely useful for identifying unintentional repetitiveness and for making sure you're actually covering the topic you intend to rank for.</p>
-        </article>
-      </div>
+      <div style={{ marginTop: '4rem' }}><Article /></div>
     </div>
+  );
+}
+
+function ResultBlock({ data, tab, setTab }) {
+  const { stats } = data;
+  const list = stats[tab] || [];
+  const max = list[0]?.count || 1;
+  return (
+    <div className="result-box">
+      {data.mode === 'url' && (
+        <>
+          <h3 className="result-section-title">Page</h3>
+          <div className="result-grid">
+            <div className="result-item"><span className="result-label">URL</span><span className="result-value-mono">{data.finalUrl}</span></div>
+            <div className="result-item"><span className="result-label">Title</span><span className="result-value">{data.title || '—'}</span></div>
+            <div className="result-item"><span className="result-label">First H1</span><span className="result-value">{data.h1?.[0] || '—'}</span></div>
+            <div className="result-item"><span className="result-label">H1 / H2</span><span className="result-value">{data.h1?.length || 0} / {data.h2Count || 0}</span></div>
+          </div>
+        </>
+      )}
+
+      <h3 className="result-section-title">Vocabulary</h3>
+      <div className="wc-grid">
+        <Stat label="Total words" value={stats.totalWords.toLocaleString()} highlight />
+        <Stat label={stats.excludeStopwords ? 'Without stopwords' : 'Considered'} value={stats.totalConsidered.toLocaleString()} />
+        <Stat label="Unique words" value={stats.uniqueWords.toLocaleString()} />
+        <Stat label="Lexical diversity" value={stats.lexicalDiversity} sub="unique / total" />
+      </div>
+
+      <div className="og-tabs" style={{ marginTop: '1rem' }}>
+        <button type="button" className={`og-tab ${tab === 'unigrams' ? 'active' : ''}`} onClick={() => setTab('unigrams')}>Words</button>
+        <button type="button" className={`og-tab ${tab === 'bigrams' ? 'active' : ''}`} onClick={() => setTab('bigrams')}>2-word phrases</button>
+        <button type="button" className={`og-tab ${tab === 'trigrams' ? 'active' : ''}`} onClick={() => setTab('trigrams')}>3-word phrases</button>
+      </div>
+
+      {list.length === 0 ? (
+        <div className="og-block-empty">No {tab} above the threshold.</div>
+      ) : (
+        <div>
+          {list.map((row, idx) => (
+            <div key={row.term} className="kd-row">
+              <span className="kd-rank">#{idx + 1}</span>
+              <span className="kd-term">{row.term}</span>
+              <span className="kd-count">{row.count}</span>
+              <span className="kd-density">{row.density}%</span>
+              <div className="kd-bar"><div className="kd-bar-fill" style={{ width: `${(row.count / max) * 100}%` }} /></div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value, sub, highlight }) {
+  return (
+    <div className={`wc-stat ${highlight ? 'highlight' : ''}`}>
+      <div className="wc-stat-label">{label}</div>
+      <div className="wc-stat-value">{value}</div>
+      {sub && <div className="wc-stat-sub">{sub}</div>}
+    </div>
+  );
+}
+
+function Article() {
+  return (
+    <article className="tool-article">
+      <h2>Keyword Density: A Useful Diagnostic, Not a Ranking Lever</h2>
+      <p>Keyword density — the percentage a term occupies of your total word count — was once a favoured way to game search rankings. Modern Google ignores raw frequency and looks for topical coherence, entities, and how naturally a topic is covered. So why look at density at all? Because it’s an excellent <em>diagnostic</em>: a quick way to see what a page is actually about, and a fast way to flag accidental keyword stuffing.</p>
+      <h3>What healthy density looks like</h3>
+      <p>For most editorial content the primary keyword should appear at 0.5–1.5% density — roughly one mention every 100–200 words. Bigrams and trigrams (two- and three-word phrases) are usually more revealing than single words: a page about &ldquo;machine learning&rdquo; should have &ldquo;machine learning&rdquo; as a top bigram, not just &ldquo;learning&rdquo; or &ldquo;machine&rdquo; in isolation.</p>
+      <h3>Stopwords change everything</h3>
+      <p>Without filtering stopwords (&ldquo;the, of, and&rdquo;), every page looks like it’s about &ldquo;the&rdquo;. We exclude them by default. Toggle them back on if you’re analysing for plagiarism or style.</p>
+      <h3>How to use this tool</h3>
+      <p>Paste a draft to see what your editor weights. Or fetch a competitor’s URL to learn which phrases they’re emphasising — then write better and more naturally. Aim for the top trigrams to actually describe the topic in plain English; if they don’t, your content is probably unfocused.</p>
+    </article>
   );
 }

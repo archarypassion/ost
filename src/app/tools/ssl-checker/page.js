@@ -1,66 +1,140 @@
 "use client";
 import { useState } from 'react';
 
-export default function SSLChecker() {
-  const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+const SEV_ICON = { pass: '✓', warn: '!', fail: '✕', info: 'i' };
+const SEV_LABEL = { pass: 'Good', warn: 'Warning', fail: 'Issue', info: 'Info' };
 
-  const handleCheck = async (e) => {
+export default function SslCheckerPage() {
+  const [domain, setDomain] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  const submit = async (e) => {
     e.preventDefault();
-    if (!url) return;
-    setLoading(true); setResult(null);
-    await new Promise(r => setTimeout(r, 1000));
-    const domain = url.replace(/https?:\/\//, '').split('/')[0];
-    setResult({
-      valid: true, domain, issuer: 'Let\'s Encrypt Authority X3', protocol: 'TLS 1.3',
-      validFrom: '2025-01-15', validUntil: '2025-07-15', daysLeft: 75,
-      wildcardCert: false, sniSupported: true,
-    });
-    setLoading(false);
+    setLoading(true); setData(null); setError(null);
+    try {
+      const res = await fetch('/api/tools/ssl-checker', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: domain.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json?.error || `Request failed with status ${res.status}.`);
+      } else setData(json);
+    } catch (err) { setError(err?.message || 'Something went wrong.'); }
+    finally { setLoading(false); }
   };
 
   return (
     <div>
       <div className="tool-header"><h1>SSL Certificate Checker</h1></div>
       <div className="tool-card">
-        <form className="search-bar" onSubmit={handleCheck}>
-          <input type="url" placeholder="Enter website URL..." className="search-input" value={url} onChange={e => setUrl(e.target.value)} required />
-          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Checking...' : 'Check SSL'}</button>
+        <form className="search-bar" onSubmit={submit}>
+          <input type="text" placeholder="example.com" className="search-input" value={domain} onChange={(e) => setDomain(e.target.value)} required />
+          <button type="submit" className="check-btn" disabled={loading}>{loading ? 'Connecting…' : 'Check Certificate'}</button>
         </form>
-        <p className="tool-description">Verify the SSL/TLS certificate of any domain — check validity, expiry date, issuer, and protocol version.</p>
-        {result && (
-          <div className="result-box">
-            <div className="result-score" style={{ color: result.valid ? '#10B981' : '#EF4444' }}>
-              {result.valid ? '✓ Valid SSL Certificate' : '✗ Invalid or Expired Certificate'}
-            </div>
-            <div className="result-grid">
-              <div className="result-item"><span className="result-label">Domain</span><span className="result-value">{result.domain}</span></div>
-              <div className="result-item"><span className="result-label">Issuer</span><span className="result-value">{result.issuer}</span></div>
-              <div className="result-item"><span className="result-label">Protocol</span><span className="result-value">{result.protocol}</span></div>
-              <div className="result-item"><span className="result-label">Valid From</span><span className="result-value">{result.validFrom}</span></div>
-              <div className="result-item"><span className="result-label">Valid Until</span><span className="result-value">{result.validUntil}</span></div>
-              <div className="result-item"><span className="result-label">Days Remaining</span><span className="result-value" style={{ color: result.daysLeft < 30 ? '#EF4444' : result.daysLeft < 60 ? '#F59E0B' : '#10B981' }}>{result.daysLeft} days</span></div>
-              <div className="result-item"><span className="result-label">Wildcard Certificate</span><span className="result-value">{result.wildcardCert ? 'Yes' : 'No'}</span></div>
-            </div>
-          </div>
-        )}
+        <p className="tool-description">
+          We open a real TLS handshake to the host on port 443, fetch the certificate chain it presents,
+          and validate it against Node’s root trust store. We report the protocol version, cipher,
+          expiry date, hostname match, key strength, signature algorithm, and the full chain.
+        </p>
+
+        {error && <div className="result-error">{error}</div>}
+        {data && <ResultBlock data={data} />}
       </div>
-      <div style={{ marginTop: '4rem' }}>
-        <article className="tool-article">
-          <h2>SSL Certificates and HTTPS: Security, Trust, and Why Google Cares</h2>
-          <p>The padlock icon in your browser's address bar represents something that has gone from a nice-to-have feature for e-commerce sites to an absolute baseline requirement for every website on the internet. SSL (Secure Sockets Layer) — more accurately called TLS (Transport Layer Security) in its modern form — is a cryptographic protocol that creates an encrypted connection between a user's browser and your web server. This encryption ensures that data transmitted between the two cannot be intercepted or tampered with by third parties.</p>
-          <p>Google made its position on HTTPS crystal clear back in 2014 when it announced HTTPS as a ranking signal. While it's considered a lightweight signal compared to content quality and backlinks, it's a checkbox that every site needs to tick — because failing it not only hurts rankings slightly but actively damages user trust in a way that other technical issues don't.</p>
-          <h3>What Happens Without SSL</h3>
-          <p>Browsers have progressively escalated their warnings for non-HTTPS sites. Chrome now displays a "Not Secure" warning in the address bar for any HTTP page. For pages with login forms or payment fields on HTTP, Chrome displays a much more alarming full interstitial warning that many users won't bypass. These warnings are conversion killers — users who see them are significantly less likely to fill in forms, make purchases, or trust the site with their information. Even if your site doesn't collect sensitive data, the "Not Secure" label creates a perception of unprofessionalism that affects credibility.</p>
-          <h3>Let's Encrypt: Free SSL for Everyone</h3>
-          <p>The cost of SSL certificates was once a legitimate barrier — commercial certificates could cost hundreds of dollars per year. Let's Encrypt, launched in 2016, changed that permanently. It's a free, automated certificate authority that issues 90-day SSL certificates at no cost and with renewal automation. Today, there's genuinely no reason for any website not to have HTTPS. Most hosting providers (cPanel hosts, Kinsta, WP Engine, Netlify, Vercel) install and auto-renew Let's Encrypt certificates automatically. For sites still on HTTP, the migration is typically a few clicks in the hosting control panel.</p>
-          <h3>Certificate Expiry: The Silent Killer</h3>
-          <p>SSL certificates have expiry dates. When a certificate expires, browsers immediately block visitors from accessing the site with a full-screen error warning that's very difficult to bypass. This is one of the most damaging things that can happen to a website's traffic — users see a security error and leave. It's also avoidable with proper monitoring. Let's Encrypt certificates expire every 90 days by design, but they auto-renew if the automation is properly configured. Commercial certificates expire annually or biannually and require manual renewal. Our SSL Checker tells you exactly how many days remain on any certificate so you're never caught off guard.</p>
-          <h3>TLS Protocol Versions Matter</h3>
-          <p>Not all HTTPS is equal. The TLS protocol has gone through multiple versions, and the older ones (TLS 1.0 and TLS 1.1) have known security vulnerabilities and are now deprecated by major browsers. TLS 1.2 is acceptable, but TLS 1.3 — the current standard — offers improved security and measurably faster connection speeds. Check your server's TLS configuration to ensure you're using modern protocols and cipher suites.</p>
-        </article>
-      </div>
+      <div style={{ marginTop: '4rem' }}><Article /></div>
     </div>
+  );
+}
+
+function ResultBlock({ data }) {
+  const { cert, summary, checks, protocol, cipher, alpn, host, authorized, authError } = data;
+  const banner = summary.fail ? 'danger' : summary.warn ? 'warning' : 'success';
+  const bannerText = summary.fail
+    ? `${summary.fail} issue${summary.fail === 1 ? '' : 's'} found`
+    : summary.warn
+    ? `${summary.warn} warning${summary.warn === 1 ? '' : 's'}`
+    : `Certificate looks healthy${cert?.daysUntilExpiry !== null ? ` · ${cert.daysUntilExpiry} days until expiry` : ''}`;
+
+  return (
+    <div className="result-box">
+      <div className={`result-banner ${banner}`}>
+        <strong>{bannerText}</strong>
+        <span>· {protocol || '—'} · {cipher?.name || '—'}{alpn ? ` · ${alpn}` : ''}</span>
+      </div>
+
+      <h3 className="result-section-title">Subject &amp; Issuer</h3>
+      <div className="result-grid">
+        <div className="result-item"><span className="result-label">Common Name</span><span className="result-value">{cert?.subject?.commonName || '—'}</span></div>
+        <div className="result-item"><span className="result-label">Organisation</span><span className="result-value">{cert?.subject?.organisation || '—'}</span></div>
+        <div className="result-item"><span className="result-label">Issuer</span><span className="result-value">{cert?.issuer?.commonName || cert?.issuer?.organisation || '—'}</span></div>
+        <div className="result-item"><span className="result-label">Serial</span><span className="result-value-mono">{cert?.serial || '—'}</span></div>
+        <div className="result-item"><span className="result-label">Valid From</span><span className="result-value">{cert?.validFrom || '—'}</span></div>
+        <div className="result-item"><span className="result-label">Valid To</span><span className="result-value">{cert?.validTo || '—'}</span></div>
+        <div className="result-item"><span className="result-label">Days until expiry</span><span className="result-value">{cert?.daysUntilExpiry ?? '—'}</span></div>
+        <div className="result-item"><span className="result-label">Trusted</span><span className="result-value">{authorized ? 'Yes' : `No — ${authError}`}</span></div>
+        <div className="result-item"><span className="result-label">Key</span><span className="result-value">{cert?.keyAlgorithm || '—'}{cert?.keyBits ? ` (${cert.keyBits} bits)` : ''}</span></div>
+        <div className="result-item"><span className="result-label">Signature Alg</span><span className="result-value">{cert?.sigAlg || '—'}</span></div>
+      </div>
+
+      {cert?.altNames?.length > 0 && (
+        <>
+          <h3 className="result-section-title">Subject Alternative Names ({cert.altNames.length})</h3>
+          <div className="ssl-altnames">
+            {cert.altNames.map((alt, idx) => (
+              <code key={idx} className="ssl-altname">{alt.replace(/^DNS:/i, '')}</code>
+            ))}
+          </div>
+        </>
+      )}
+
+      <h3 className="result-section-title">Certificate chain ({cert?.chainLength || 0})</h3>
+      <ol className="rc-chain">
+        {(cert?.chain || []).map((c, idx) => (
+          <li key={idx} className="rc-step">
+            <div className="rc-step-head">
+              <span className="rc-step-num">{idx + 1}</span>
+              <strong>{c.subject}</strong>
+              <span className="rc-step-time">issued by {c.issuer}</span>
+            </div>
+            <div className="rc-step-location">
+              <span className="result-value-mono" style={{ paddingLeft: 0 }}>
+                {c.validFrom} → {c.validTo}{c.bits ? ` · ${c.bits} bits` : ''}
+              </span>
+            </div>
+            {c.fingerprint256 && <div className="rc-step-location"><code style={{ fontSize: '0.72rem' }}>{c.fingerprint256}</code></div>}
+          </li>
+        ))}
+      </ol>
+
+      <h3 className="result-section-title">Findings</h3>
+      <ul className="og-check-list">
+        {checks.map((c, idx) => (
+          <li key={idx} className={`og-check-row sev-${c.severity}`}>
+            <span className={`og-check-icon sev-${c.severity}`}>{SEV_ICON[c.severity]}</span>
+            <div className="og-check-body">
+              <div className="og-check-head"><span className={`og-check-label sev-${c.severity}`}>{SEV_LABEL[c.severity]}</span></div>
+              <div className="og-check-message">{c.message}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Article() {
+  return (
+    <article className="tool-article">
+      <h2>SSL/TLS: What Actually Matters in 2026</h2>
+      <p>Most TLS audits are mountains of detail when, for production sites, the key questions are simple: does the certificate match the hostname, is it issued by a CA the browser trusts, is it within its validity window, is the key strong enough, and is the negotiated protocol modern? This tool answers each one and shows you the chain it inspected.</p>
+      <h3>Protocol versions</h3>
+      <p>TLS 1.3 (2018) is the gold standard — fewer round trips, only modern ciphers. TLS 1.2 is acceptable. Anything older (1.0, 1.1, SSL 3) should be disabled — and if your server even negotiates them, you have a backwards-compatibility problem.</p>
+      <h3>Hostname matching</h3>
+      <p>Modern browsers ignore the certificate’s Common Name and check the Subject Alternative Names instead. We list every DNS name on the SAN list and explicitly verify the requested host matches one of them, including wildcard rules.</p>
+      <h3>Renewal cadence</h3>
+      <p>Most public CAs now issue certificates valid for ≤ 13 months and Let’s Encrypt issues 90-day certs. Set up automatic renewal and monitor expiry dates from outside the system that owns them.</p>
+    </article>
   );
 }

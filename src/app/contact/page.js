@@ -1,46 +1,57 @@
-"use client";
+'use client';
+
 import Link from 'next/link';
+import LegalPageShell from '@/components/LegalPageShell';
+import { CONTACT_EMAIL, SITE_NAME } from '@/lib/tools-catalog';
+
+const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`${SITE_NAME} — question`)}`;
 
 export default function ContactPage() {
   return (
-    <div className="landing-page">
-      <header className="landing-header">
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <Link href="/" className="logo">
-             <span style={{color: '#4285F4', fontWeight: 500}}>T</span><span style={{color: '#EA4335', fontWeight: 500}}>r</span><span style={{color: '#FBBC05', fontWeight: 500}}>u</span><span style={{color: '#4285F4', fontWeight: 500}}>e</span><span style={{color: '#34A853', fontWeight: 500}}>S</span><span style={{color: '#EA4335', fontWeight: 500}}>e</span><span style={{color: 'var(--text-secondary)', fontWeight: 300}}>o</span>
+    <LegalPageShell>
+      <article className="tool-article" style={{ width: '100%' }}>
+        <h1>Contact</h1>
+        <p>
+          We welcome questions about how the tools work, suggestions for improvements, and reports of
+          incorrect or confusing results.
+        </p>
+
+        <div
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            padding: '2rem',
+            borderRadius: '8px',
+            border: '1px solid var(--border-color)',
+            marginTop: '2rem',
+          }}
+        >
+          <h2 style={{ marginTop: 0 }}>Help and general enquiries</h2>
+          <p style={{ marginBottom: 0 }}>
+            Email:{' '}
+            <a href={mailto} style={{ color: 'var(--accent-color, #1A73E8)' }}>
+              {CONTACT_EMAIL}
+            </a>
+          </p>
+        </div>
+
+        <h2 style={{ marginTop: '2rem' }}>Privacy and data</h2>
+        <p>
+          For privacy-related requests (including questions about how we handle URLs you submit),
+          please email the same address with a clear subject line such as &ldquo;Privacy&rdquo; or
+          &ldquo;Data question&rdquo;.           See also our{' '}
+          <Link href="/privacy" style={{ color: 'var(--accent-color, #1A73E8)' }}>
+            Privacy Policy
           </Link>
-        </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <Link href="/tools/noindex-checker" className="btn-primary">Go to Tools</Link>
-        </div>
-      </header>
+          .
+        </p>
 
-      <main style={{ flex: 1, padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center' }}>
-        <article className="tool-article" style={{ width: '100%' }}>
-          <h2>Contact Us</h2>
-          <p>Have questions, feedback, or feature requests? We'd love to hear from you.</p>
-          
-          <div style={{ backgroundColor: 'var(--bg-card)', padding: '2rem', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '2rem' }}>
-            <h3 style={{ marginTop: 0 }}>Get in Touch</h3>
-            <p><strong>Email:</strong> support@trueseo.example.com</p>
-            <p><strong>Twitter:</strong> @TrueSeoTools</p>
-            <p><strong>Address:</strong><br />TrueSeo Technologies<br />123 Search Engine Blvd<br />San Francisco, CA 94105</p>
-          </div>
-          
-          <h3 style={{ marginTop: '2rem' }}>Bug Reports & Feature Requests</h3>
-          <p>If you've found a bug in one of our tools, or have a suggestion for a new tool that would make your SEO workflow easier, please email us directly with the subject line "Feature Request" or "Bug Report". We read and evaluate every submission.</p>
-
-        </article>
-      </main>
-
-      <footer style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-        <div style={{ padding: '15px 30px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '2rem' }}>
-          <Link href="/about" style={{ color: 'inherit' }}>About</Link>
-          <Link href="/privacy" style={{ color: 'inherit' }}>Privacy Policy</Link>
-          <Link href="/terms" style={{ color: 'inherit' }}>Terms of Service</Link>
-          <Link href="/contact" style={{ color: 'inherit' }}>Contact</Link>
-        </div>
-      </footer>
-    </div>
+        <h2>Bugs and feature ideas</h2>
+        <p>
+          If something looks broken, include the tool name, the URL or input you used (if safe to
+          share), and what you expected versus what you saw. We read every message; we cannot promise
+          a reply to every suggestion, but they do influence what we ship next.
+        </p>
+      </article>
+    </LegalPageShell>
   );
 }
