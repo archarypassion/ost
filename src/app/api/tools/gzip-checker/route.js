@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 const REQUEST_TIMEOUT_MS = 12_000;
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
-const USER_AGENT = 'TrueSEO-GzipChecker/1.0 (+https://trueseo.tools)';
+const USER_AGENT = 'Tool4Utility-GzipChecker/1.0 (+https://tool4utility.com)';
 
 // Raw HTTP fetch that does NOT decode the body — we want the wire bytes.
 function rawFetch(targetUrl, { acceptEncoding = 'gzip, deflate, br', maxRedirects = 5 } = {}) {

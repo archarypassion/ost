@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Menu, Sun, Moon } from 'lucide-react';
 import { useTheme } from './Layout';
+import { SITE_NAME } from '@/lib/tools-catalog';
 
 export default function Header({ toggleSidebar }) {
   const { theme, toggleTheme } = useTheme();
@@ -14,8 +15,7 @@ export default function Header({ toggleSidebar }) {
           <Menu size={24} />
         </button>
         <Link href="/" className="logo">
-          <div className="logo-icon"></div>
-          <span>TRUESEO</span>
+          <span>{SITE_NAME}</span>
         </Link>
       </div>
       <div className="header-right">

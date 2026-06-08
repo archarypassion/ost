@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 15_000;
 const RESOURCE_TIMEOUT_MS = 8_000;
 const MAX_RESOURCE_PROBES = 12;
-const USER_AGENT = 'TrueSEO-PageSpeed/1.0 (+https://trueseo.tools)';
+const USER_AGENT = 'Tool4Utility-PageSpeed/1.0 (+https://tool4utility.com)';
 
 function instrumentedRequest(target, { method = 'GET', maxRedirects = 5 } = {}) {
   return new Promise((resolve, reject) => {

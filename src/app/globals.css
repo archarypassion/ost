@@ -143,14 +143,6 @@ a {
   font-weight: 500;
 }
 
-.logo-icon {
-  width: 24px;
-  height: 24px;
-  background: var(--accent-color);
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
 .theme-toggle-btn {
   background: transparent;
   border: none;
@@ -1573,26 +1565,6 @@ a {
   color: var(--lv2-text);
 }
 
-.lv2-brand-mark {
-  position: relative;
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: var(--lv2-gradient);
-  box-shadow: 0 6px 18px -4px var(--lv2-blue-glow), inset 0 1px 0 rgba(255,255,255,0.4);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lv2-brand-mark-inner {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: rgba(5, 6, 10, 0.85);
-  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.7);
-}
-
 .lv2-brand-name {
   background: linear-gradient(180deg, #FFFFFF 0%, #C7CFDC 100%);
   -webkit-background-clip: text;
@@ -2158,9 +2130,17 @@ a {
 
 .lv2-bento-card:hover::before { opacity: 1; }
 
-.lv2-bento-wide   { grid-column: span 4; }
-.lv2-bento-normal { grid-column: span 3; }
-.lv2-bento-tall   { grid-column: span 2; grid-row: span 2; }
+.lv2-bento-wide    { grid-column: span 4; }
+.lv2-bento-normal  { grid-column: span 3; }
+.lv2-bento-tall    { grid-column: span 2; grid-row: span 2; }
+.lv2-bento-hero    { grid-column: span 4; }
+.lv2-bento-compact { grid-column: span 2; }
+.lv2-bento-full    { grid-column: span 6; }
+
+/* "Hero" card gets a slightly richer treatment to anchor row 1. */
+.lv2-bento-hero .lv2-bento-title { font-size: 1.5rem; }
+.lv2-bento-hero .lv2-bento-desc  { font-size: 1rem; }
+.lv2-bento-full .lv2-bento-title { font-size: 1.5rem; }
 
 .lv2-bento-icon {
   display: inline-flex;
@@ -2220,16 +2200,102 @@ a {
   max-width: 1200px;
   margin: 0 auto;
   padding: 110px 24px 40px;
+  scroll-margin-top: 88px; /* anchor offset under sticky nav */
+}
+
+/* Search + category filter row */
+.lv2-cat-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 36px;
+  padding: 14px;
+  background: linear-gradient(180deg, var(--lv2-surface-strong), var(--lv2-surface));
+  border: 1px solid var(--lv2-border);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.lv2-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lv2-pill-btn {
+  padding: 8px 14px;
+  background: rgba(5, 6, 10, 0.45);
+  border: 1px solid var(--lv2-border);
+  border-radius: 999px;
+  color: var(--lv2-text-soft);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.lv2-pill-btn:hover {
+  background: var(--lv2-surface-strong);
+  color: var(--lv2-text);
+  border-color: var(--lv2-border-strong);
+}
+
+.lv2-pill-btn.active {
+  background: var(--lv2-blue-soft);
+  border-color: rgba(96,165,250,0.55);
+  color: var(--lv2-blue-light);
+  box-shadow: inset 0 0 0 1px rgba(96,165,250,0.25);
+}
+
+/* Empty-state when search matches nothing */
+.lv2-cat-empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 28px;
+  background: var(--lv2-surface);
+  border: 1px dashed var(--lv2-border-strong);
+  border-radius: 14px;
+  color: var(--lv2-text-soft);
+}
+
+.lv2-cat-empty > svg {
+  flex-shrink: 0;
+  color: var(--lv2-text-dim);
+}
+
+.lv2-cat-empty > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lv2-cat-empty strong {
+  color: var(--lv2-text);
+  font-weight: 600;
+}
+
+.lv2-cat-empty span {
+  font-size: 0.875rem;
+  color: var(--lv2-text-dim);
 }
 
 .lv2-cat-stack {
   display: flex;
   flex-direction: column;
-  gap: 56px;
+  gap: 48px;
 }
 
 .lv2-cat-group-head {
   margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .lv2-cat-group-head h3 {
@@ -2237,7 +2303,21 @@ a {
   font-weight: 600;
   letter-spacing: -0.4px;
   color: var(--lv2-text);
-  margin-bottom: 6px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lv2-cat-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--lv2-blue-soft);
+  color: var(--lv2-blue-light);
+  border: 1px solid rgba(96,165,250,0.25);
+  letter-spacing: 0.04em;
 }
 
 .lv2-cat-group-head p {
@@ -2248,57 +2328,88 @@ a {
 
 .lv2-cat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
 }
 
+/* Richer tool card — icon + name + short description + arrow.
+   The whole card is a single tap-target so users can launch any tool in one click. */
 .lv2-tool-card {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: 38px 1fr 18px;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 16px 18px;
   background: var(--lv2-surface);
   border: 1px solid var(--lv2-border);
-  border-radius: 12px;
-  font-size: 0.9375rem;
+  border-radius: 14px;
   color: var(--lv2-text-soft);
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.lv2-tool-card:hover {
+.lv2-tool-card:hover,
+.lv2-tool-card:focus-visible {
   transform: translateY(-2px);
   background: var(--lv2-surface-strong);
-  border-color: rgba(96,165,250,0.35);
+  border-color: rgba(96,165,250,0.45);
   color: var(--lv2-text);
+  box-shadow: 0 14px 30px -20px rgba(59,130,246,0.4);
+  outline: none;
 }
 
 .lv2-tool-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   background: var(--lv2-blue-soft);
   color: var(--lv2-blue-light);
-  border-radius: 8px;
+  border: 1px solid rgba(96,165,250,0.22);
+  border-radius: 10px;
   flex-shrink: 0;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.lv2-tool-card:hover .lv2-tool-icon {
+  background: rgba(59,130,246,0.28);
+  border-color: rgba(96,165,250,0.5);
+}
+
+.lv2-tool-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .lv2-tool-name {
-  flex: 1;
-  min-width: 0;
-  font-weight: 500;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lv2-text);
+  letter-spacing: -0.2px;
+}
+
+.lv2-tool-desc {
+  font-size: 0.8125rem;
+  color: var(--lv2-text-dim);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .lv2-tool-arrow {
   color: var(--lv2-text-dim);
   transform: translateX(-4px);
   opacity: 0;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.18s ease, opacity 0.18s ease, color 0.18s ease;
 }
 
-.lv2-tool-card:hover .lv2-tool-arrow {
+.lv2-tool-card:hover .lv2-tool-arrow,
+.lv2-tool-card:focus-visible .lv2-tool-arrow {
   transform: translateX(0);
   opacity: 1;
   color: var(--lv2-blue-light);
@@ -2570,7 +2681,10 @@ a {
   .lv2-bento { grid-template-columns: repeat(2, 1fr); }
   .lv2-bento-wide,
   .lv2-bento-normal,
-  .lv2-bento-tall { grid-column: span 2; grid-row: auto; }
+  .lv2-bento-tall,
+  .lv2-bento-hero,
+  .lv2-bento-compact,
+  .lv2-bento-full { grid-column: span 2; grid-row: auto; }
 
   .lv2-how-grid { grid-template-columns: 1fr; }
   .lv2-how-connector { display: none; }
@@ -2594,8 +2708,23 @@ a {
   .lv2-bento { grid-template-columns: 1fr; }
   .lv2-bento-wide,
   .lv2-bento-normal,
-  .lv2-bento-tall { grid-column: span 1; }
+  .lv2-bento-tall,
+  .lv2-bento-hero,
+  .lv2-bento-compact,
+  .lv2-bento-full { grid-column: span 1; }
   .lv2-preview-card { transform: none; }
+
+  /* Stack the catalog controls and let pills scroll horizontally on phones. */
+  .lv2-cat-controls { flex-direction: column; align-items: stretch; }
+  .lv2-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lv2-pill-btn { flex-shrink: 0; }
+  .lv2-cat-grid { grid-template-columns: 1fr; }
+  .lv2-cat-empty { flex-direction: column; align-items: flex-start; text-align: left; }
 }
 
 /* =============================================

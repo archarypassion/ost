@@ -1,4 +1,4 @@
-# Deploy TrueSEO on Vercel
+# Deploy tool4utility on Vercel
 
 ## 1. Push the repo
 

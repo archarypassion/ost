@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 15_000;
 
 const USER_AGENTS = {
-  default: 'TrueSEO-RedirectChecker/1.0 (+https://trueseo.tools)',
+  default: 'Tool4Utility-RedirectChecker/1.0 (+https://tool4utility.com)',
   googlebot: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
   mobile: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
   bingbot: 'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',

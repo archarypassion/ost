@@ -1,8 +1,8 @@
 // Single source of truth for every public tool route on the site.
 // The home page renders these grouped, and app/sitemap.js emits one entry per tool.
 
-export const SITE_NAME = 'TrueSEO';
-export const SITE_TAGLINE = 'Premium SEO tools for modern developers and marketers.';
+export const SITE_NAME = 'tool4utility';
+export const SITE_TAGLINE = 'Premium SEO & web diagnostics tools for modern developers and marketers.';
 
 /** Public contact for help, privacy questions, and abuse reports. */
 export const CONTACT_EMAIL = 'sourabhmalame@gmail.com';

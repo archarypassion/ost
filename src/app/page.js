@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   Check,
@@ -38,7 +38,12 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import LandingSiteFooter from '@/components/LandingSiteFooter';
-import { SITE_NAME, TOOLS, buildHomeToolCategories } from '@/lib/tools-catalog';
+import {
+  SITE_NAME,
+  TOOLS,
+  HOME_GROUP_ORDER,
+  HOME_GROUP_META,
+} from '@/lib/tools-catalog';
 
 const ICON_BY_SLUG = {
   'noindex-checker': FileSearch,
@@ -64,11 +69,17 @@ const ICON_BY_SLUG = {
   'ip-lookup': Globe,
 };
 
-const toolCategories = buildHomeToolCategories(ICON_BY_SLUG);
+const ALL_TOOLS = TOOLS.map((t) => ({
+  ...t,
+  path: `/tools/${t.slug}`,
+  icon: ICON_BY_SLUG[t.slug] || Activity,
+}));
+
+const GROUP_FILTERS = ['All', ...HOME_GROUP_ORDER];
 
 const FEATURE_BENTO = [
   {
-    span: 'wide',
+    span: 'hero',
     icon: Search,
     eyebrow: 'Indexation',
     title: 'See exactly what Google sees',
@@ -84,7 +95,7 @@ const FEATURE_BENTO = [
     accent: '#22D3EE',
   },
   {
-    span: 'normal',
+    span: 'compact',
     icon: BarChart3,
     eyebrow: 'On-Page',
     title: '17-point audit',
@@ -92,7 +103,7 @@ const FEATURE_BENTO = [
     accent: '#60A5FA',
   },
   {
-    span: 'normal',
+    span: 'compact',
     icon: Shield,
     eyebrow: 'Server & SSL',
     title: 'Real TLS handshake',
@@ -100,7 +111,7 @@ const FEATURE_BENTO = [
     accent: '#38BDF8',
   },
   {
-    span: 'wide',
+    span: 'full',
     icon: Layers,
     eyebrow: 'Links & Redirects',
     title: 'Trace every hop, find every break',
@@ -141,6 +152,7 @@ const SCAN_DEMO_ROWS = [
 
 export default function Home() {
   const [theme, setTheme] = useState('light');
+  const [activeGroup, setActiveGroup] = useState('All');
 
   useEffect(() => {
     const saved = (typeof window !== 'undefined' && localStorage.getItem('theme')) || 'light';
@@ -157,6 +169,21 @@ export default function Home() {
     }
   };
 
+  // Grouped tool list filtered by category. Memoized so we don't re-walk the catalog
+  // on every render.
+  const filteredGroups = useMemo(() => {
+    const matches = ALL_TOOLS.filter(
+      (t) => activeGroup === 'All' || t.group === activeGroup,
+    );
+    return HOME_GROUP_ORDER.map((groupKey) => {
+      const meta = HOME_GROUP_META[groupKey];
+      const tools = matches.filter((t) => t.group === groupKey);
+      return { key: groupKey, title: meta.title, description: meta.description, tools };
+    }).filter((g) => g.tools.length > 0);
+  }, [activeGroup]);
+
+  const totalMatching = filteredGroups.reduce((sum, g) => sum + g.tools.length, 0);
+
   return (
     <div className="landing-v2">
       <div className="lv2-page-glow" aria-hidden="true" />
@@ -165,14 +192,11 @@ export default function Home() {
       <nav className="lv2-nav">
         <div className="lv2-nav-inner">
           <Link href="/" className="lv2-brand">
-            <span className="lv2-brand-mark" aria-hidden="true">
-              <span className="lv2-brand-mark-inner" />
-            </span>
             <span className="lv2-brand-name">{SITE_NAME}</span>
           </Link>
 
           <div className="lv2-nav-links">
-            <Link href="/tools/noindex-checker">Tools</Link>
+            <a href="#tools">Tools</a>
             <a href="#features">Features</a>
             <a href="#how">How it works</a>
             <Link href="/about">About</Link>
@@ -219,9 +243,9 @@ export default function Home() {
             </p>
 
             <div className="lv2-hero-actions">
-              <Link href="/tools/noindex-checker" className="lv2-btn-primary">
-                Explore tools <ArrowRight size={16} />
-              </Link>
+              <a href="#tools" className="lv2-btn-primary">
+                Explore {TOOLS.length} tools <ArrowRight size={16} />
+              </a>
               <Link href="/about" className="lv2-btn-ghost">
                 Learn more
               </Link>
@@ -335,41 +359,86 @@ export default function Home() {
       </section>
 
       {/* ── Tool catalog ── */}
-      <section className="lv2-catalog">
+      <section className="lv2-catalog" id="tools">
         <div className="lv2-section-head">
           <span className="lv2-tag">The full toolkit</span>
           <h2 className="lv2-section-title">
             {TOOLS.length} tools, <span className="lv2-grad">one platform</span>
           </h2>
           <p className="lv2-section-sub">
-            Grouped by what you&apos;re trying to fix. Pick one and start scanning.
+            Pick a category to jump straight to the tool you need.
           </p>
         </div>
 
-        <div className="lv2-cat-stack">
-          {toolCategories.map((cat) => (
-            <div key={cat.title} className="lv2-cat-group">
-              <div className="lv2-cat-group-head">
-                <h3>{cat.title}</h3>
-                <p>{cat.description}</p>
-              </div>
-              <div className="lv2-cat-grid">
-                {cat.tools.map((tool) => {
-                  const Icon = tool.icon || Activity;
-                  return (
-                    <Link key={tool.path} href={tool.path} className="lv2-tool-card">
-                      <span className="lv2-tool-icon">
-                        <Icon size={16} />
-                      </span>
-                      <span className="lv2-tool-name">{tool.name}</span>
-                      <ArrowRight size={14} className="lv2-tool-arrow" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        {/* Category filter — one tap to narrow the catalog. */}
+        <div className="lv2-cat-controls">
+          <div className="lv2-pills" role="tablist" aria-label="Filter tools by category">
+            {GROUP_FILTERS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                role="tab"
+                aria-selected={activeGroup === g}
+                className={`lv2-pill-btn ${activeGroup === g ? 'active' : ''}`}
+                onClick={() => setActiveGroup(g)}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {totalMatching === 0 ? (
+          <div className="lv2-cat-empty">
+            <div>
+              <strong>No tools in this category yet.</strong>
+              <span>Try a different filter.</span>
+            </div>
+            <button
+              type="button"
+              className="lv2-btn-ghost"
+              onClick={() => setActiveGroup('All')}
+            >
+              Show all tools
+            </button>
+          </div>
+        ) : (
+          <div className="lv2-cat-stack">
+            {filteredGroups.map((cat) => (
+              <div key={cat.key} className="lv2-cat-group">
+                <div className="lv2-cat-group-head">
+                  <h3>
+                    {cat.title}
+                    <span className="lv2-cat-count">{cat.tools.length}</span>
+                  </h3>
+                  <p>{cat.description}</p>
+                </div>
+                <div className="lv2-cat-grid">
+                  {cat.tools.map((tool) => {
+                    const Icon = tool.icon || Activity;
+                    return (
+                      <Link
+                        key={tool.path}
+                        href={tool.path}
+                        className="lv2-tool-card"
+                        title={tool.description}
+                      >
+                        <span className="lv2-tool-icon">
+                          <Icon size={18} />
+                        </span>
+                        <span className="lv2-tool-body">
+                          <span className="lv2-tool-name">{tool.name}</span>
+                          <span className="lv2-tool-desc">{tool.description}</span>
+                        </span>
+                        <ArrowRight size={16} className="lv2-tool-arrow" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── How it works ── */}

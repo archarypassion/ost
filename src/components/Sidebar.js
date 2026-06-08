@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   FileSearch, Link as LinkIcon, Image, Activity, Repeat, Archive,
   Maximize, Fingerprint, FileText, Map, Tag, Code2, Lock,
-  Calendar, Type, Hash, Search, Zap, Smartphone, Globe
+  Calendar, Type, Hash, Search, Zap, Smartphone, Globe,
 } from 'lucide-react';
 
 const toolGroups = [
@@ -74,7 +74,11 @@ export default function Sidebar() {
                 const isActive = pathname === tool.path;
                 return (
                   <li key={tool.name}>
-                    <Link href={tool.path} className={`nav-link ${isActive ? 'active' : ''}`}>
+                    <Link
+                      href={tool.path}
+                      className={`nav-link ${isActive ? 'active' : ''}`}
+                      title={tool.name}
+                    >
                       <Icon size={16} className="nav-icon" />
                       <span>{tool.name}</span>
                     </Link>

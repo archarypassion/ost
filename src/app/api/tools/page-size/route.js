@@ -9,7 +9,7 @@ const REQUEST_TIMEOUT_MS = 18_000;
 const RESOURCE_TIMEOUT_MS = 8_000;
 const MAX_RESOURCES = 60; // probe at most this many linked resources
 const MAX_PARALLEL = 8;
-const USER_AGENT = 'TrueSEO-PageSizeChecker/1.0 (+https://trueseo.tools)';
+const USER_AGENT = 'Tool4Utility-PageSizeChecker/1.0 (+https://tool4utility.com)';
 
 function classifyResource(url, type) {
   const u = url.toLowerCase();

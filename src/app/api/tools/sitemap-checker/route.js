@@ -10,7 +10,7 @@ const MAX_REDIRECTS = 5;
 const MAX_BODY_BYTES = 20 * 1024 * 1024;
 const MAX_INDEX_CHILDREN_TO_FETCH = 20;
 const MAX_SAMPLE_URLS = 50;
-const USER_AGENT = 'TrueSEO-SitemapChecker/1.0 (+https://trueseo.tools)';
+const USER_AGENT = 'Tool4Utility-SitemapChecker/1.0 (+https://tool4utility.com)';
 
 class ValidationError extends Error {
   constructor(message) {

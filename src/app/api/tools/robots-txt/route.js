@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_REDIRECTS = 5;
 const MAX_BODY_BYTES = 1 * 1024 * 1024;
-const USER_AGENT = 'TrueSEO-RobotsTxtChecker/1.0 (+https://trueseo.tools)';
+const USER_AGENT = 'Tool4Utility-RobotsTxtChecker/1.0 (+https://tool4utility.com)';
 
 class ValidationError extends Error {
   constructor(message) {
