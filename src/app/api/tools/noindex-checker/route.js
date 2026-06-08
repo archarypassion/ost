@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_REDIRECTS = 5;
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
-const USER_AGENT = 'Tool4Utility-NoindexChecker/1.0 (+https://tool4utility.com)';
+const USER_AGENT = 'OpenSourceTools-NoindexChecker/1.0 (+https://www.opensourcetools.online)';
 
 const KNOWN_DIRECTIVES = new Set([
   'all',

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 12_000;
 const MAX_REDIRECTS = 5;
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
-const TOOL_USER_AGENT = 'Tool4Utility-IndexChecker/1.0 (+https://tool4utility.com)';
+const TOOL_USER_AGENT = 'OpenSourceTools-IndexChecker/1.0 (+https://www.opensourcetools.online)';
 const BROWSER_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 

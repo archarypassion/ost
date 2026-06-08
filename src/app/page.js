@@ -267,7 +267,7 @@ export default function Home() {
                 <span className="lv2-preview-dot lv2-preview-dot-y" />
                 <span className="lv2-preview-dot lv2-preview-dot-g" />
                 <div className="lv2-preview-url">
-                  <Lock size={11} /> https://yoursite.com
+                  <Lock size={11} /> https://www.opensourcetools.online
                 </div>
               </div>
               <div className="lv2-preview-body">

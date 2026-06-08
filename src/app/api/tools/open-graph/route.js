@@ -10,7 +10,7 @@ const IMAGE_TIMEOUT_MS = 8_000;
 const MAX_REDIRECTS = 5;
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const USER_AGENT = 'Tool4Utility-OpenGraphChecker/1.0 (+https://tool4utility.com)';
+const USER_AGENT = 'OpenSourceTools-OpenGraphChecker/1.0 (+https://www.opensourcetools.online)';
 // Facebook crawler UA — some sites only emit OG tags when they detect this
 const FB_CRAWLER_UA = 'facebookexternalhit/1.1 (+https://www.facebook.com/externalhit_uatext.php)';
 

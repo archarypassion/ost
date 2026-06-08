@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const REQUEST_TIMEOUT_MS = 12_000;
 const MAX_REDIRECTS = 5;
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
-const USER_AGENT = 'Tool4Utility-OnPageChecker/1.0 (+https://tool4utility.com)';
+const USER_AGENT = 'OpenSourceTools-OnPageChecker/1.0 (+https://www.opensourcetools.online)';
 
 class ValidationError extends Error {
   constructor(message) {

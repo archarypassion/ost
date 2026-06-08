@@ -8,7 +8,7 @@ export class ValidationError extends Error {
   }
 }
 
-export const DEFAULT_USER_AGENT = 'Tool4Utility-Bot/1.0 (+https://tool4utility.com)';
+export const DEFAULT_USER_AGENT = 'OpenSourceTools-Bot/1.0 (+https://www.opensourcetools.online)';
 export const DEFAULT_MAX_BODY_BYTES = 5 * 1024 * 1024;
 export const DEFAULT_MAX_REDIRECTS = 5;
 

@@ -9,7 +9,7 @@ const REQUEST_TIMEOUT_MS = 25_000;
 const LINK_TIMEOUT_MS = 7_000;
 const MAX_LINKS = 100;
 const MAX_PARALLEL = 10;
-const USER_AGENT = 'Tool4Utility-LinkChecker/1.0 (+https://tool4utility.com)';
+const USER_AGENT = 'OpenSourceTools-LinkChecker/1.0 (+https://www.opensourcetools.online)';
 
 function classifyLink(href) {
   if (!href) return 'invalid';

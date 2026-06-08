@@ -42,7 +42,7 @@ async function geolocate(ip) {
   try {
     const res = await fetch(`https://ipapi.co/${ip}/json/`, {
       signal: ctrl.signal,
-      headers: { 'User-Agent': 'Tool4Utility-IPLookup/1.0' },
+      headers: { 'User-Agent': 'OpenSourceTools-IPLookup/1.0 (+https://www.opensourcetools.online)' },
     });
     if (!res.ok) return { error: `geo lookup failed: HTTP ${res.status}` };
     const data = await res.json();
