@@ -6,7 +6,7 @@ import { getSiteUrl, SITE_NAME, SITE_TAGLINE } from "@/lib/tools-catalog";
 const dmSans = DM_Sans({ subsets: ["latin"] });
 
 const siteUrl = getSiteUrl();
-const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || null;
+const googleVerification = "FClmBzRS03b9wUSRR5L5SPTE6rE5v5Wsgy8l6A_uSNc";
 const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || null;
 const yandexVerification = process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || null;
 const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || null; // e.g. "ca-pub-1234567890123456"
@@ -18,41 +18,61 @@ export const metadata = {
     template: `%s · ${SITE_NAME}`,
   },
   description:
-    'Free, fast, accurate SEO tools — sitemap checker, robots tester, on-page audit, ' +
-    'schema validator, redirect tracer, page speed and more. No sign-up required.',
+    "Free, fast, accurate SEO tools — sitemap checker, robots tester, on-page audit, " +
+    "schema validator, redirect tracer, page speed and more. No sign-up required.",
   applicationName: SITE_NAME,
   keywords: [
-    'SEO tools', 'sitemap checker', 'robots.txt tester', 'on-page SEO audit',
-    'schema validator', 'meta tag checker', 'open graph checker', 'redirect checker',
-    'broken link checker', 'page speed', 'gzip checker', 'SSL checker', 'WHOIS', 'DNS lookup',
+    "SEO tools",
+    "sitemap checker",
+    "robots.txt tester",
+    "on-page SEO audit",
+    "schema validator",
+    "meta tag checker",
+    "open graph checker",
+    "redirect checker",
+    "broken link checker",
+    "page speed",
+    "gzip checker",
+    "SSL checker",
+    "WHOIS",
+    "DNS lookup",
   ],
   authors: [{ name: SITE_NAME }],
-  alternates: { canonical: '/' },
+  alternates: { canonical: "/" },
   openGraph: {
-    type: 'website',
+    type: "website",
     siteName: SITE_NAME,
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: 'A complete suite of SEO and webmaster tools that run in your browser.',
+    description:
+      "A complete suite of SEO and webmaster tools that run in your browser.",
     url: siteUrl,
   },
   twitter: {
-    card: 'summary_large_image',
+    card: "summary_large_image",
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: 'A complete suite of SEO and webmaster tools that run in your browser.',
+    description:
+      "A complete suite of SEO and webmaster tools that run in your browser.",
   },
   robots: {
     index: true,
     follow: true,
-    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   // Site-verification meta tags. Each is omitted when its env var is not set.
   verification: {
     google: googleVerification || undefined,
     other: {
-      ...(bingVerification ? { 'msvalidate.01': bingVerification } : {}),
-      ...(yandexVerification ? { 'yandex-verification': yandexVerification } : {}),
+      ...(bingVerification ? { "msvalidate.01": bingVerification } : {}),
+      ...(yandexVerification
+        ? { "yandex-verification": yandexVerification }
+        : {}),
       // Google AdSense site-association tag.
-      ...(adsenseClient ? { 'google-adsense-account': adsenseClient } : {}),
+      ...(adsenseClient ? { "google-adsense-account": adsenseClient } : {}),
     },
   },
 };
