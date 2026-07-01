@@ -1,5 +1,6 @@
 import { DM_Sans } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { getSiteUrl, SITE_NAME, SITE_TAGLINE } from "@/lib/tools-catalog";
 
@@ -93,6 +94,8 @@ export default function RootLayout({ children }) {
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
           />
         )}
+
+        <Analytics />
       </body>
     </html>
   );

@@ -57,7 +57,7 @@ const toolGroups = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }) {
   const pathname = usePathname();
 
   return (
@@ -78,6 +78,7 @@ export default function Sidebar() {
                       href={tool.path}
                       className={`nav-link ${isActive ? 'active' : ''}`}
                       title={tool.name}
+                      onClick={onNavigate}
                     >
                       <Icon size={16} className="nav-icon" />
                       <span>{tool.name}</span>

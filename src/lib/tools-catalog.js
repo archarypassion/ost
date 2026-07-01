@@ -21,34 +21,181 @@ export const STATIC_PAGES = [
 ];
 
 // Every implemented tool. Order is significant for the home page UI.
-// Each entry has: slug, name, description, group (used for the home grouping).
+// Each entry has: slug, name, description, metaDescription (SEO), group (used for the home grouping).
 export const TOOLS = [
   // Indexation
-  { slug: 'noindex-checker',  name: 'Noindex Checker',          group: 'Indexation',           description: 'Detect noindex directives in HTML and X-Robots-Tag headers.' },
-  { slug: 'robots-txt',       name: 'Robots.txt Checker',       group: 'Indexation',           description: 'Parse and audit your robots.txt rules and sitemaps.' },
-  { slug: 'sitemap-checker',  name: 'XML Sitemap Checker',      group: 'Indexation',           description: 'Validate XML sitemaps, indexes, RSS/Atom feeds and gzip variants.' },
-  { slug: 'google-index',     name: 'Google Index Checker',     group: 'Indexation',           description: 'Combine on-page, robots, and Google site: signals into one verdict.' },
+  {
+    slug: 'noindex-checker',
+    name: 'Noindex Checker',
+    group: 'Indexation',
+    description: 'Detect noindex directives in HTML and X-Robots-Tag headers.',
+    metaDescription:
+      'Check if a page has a noindex tag in HTML or X-Robots-Tag headers. Free noindex checker for SEO audits — instant results, no sign-up.',
+  },
+  {
+    slug: 'robots-txt',
+    name: 'Robots.txt Checker',
+    group: 'Indexation',
+    description: 'Parse and audit your robots.txt rules and sitemaps.',
+    metaDescription:
+      'Analyze robots.txt for crawl rules, disallow paths, and sitemap URLs. Free robots.txt tester — find blocking errors before Googlebot does.',
+  },
+  {
+    slug: 'sitemap-checker',
+    name: 'XML Sitemap Checker',
+    group: 'Indexation',
+    description: 'Validate XML sitemaps, indexes, RSS/Atom feeds and gzip variants.',
+    metaDescription:
+      'Validate XML sitemaps, sitemap indexes, and URL counts. Free sitemap checker — catch broken URLs, format errors, and missing entries.',
+  },
+  {
+    slug: 'google-index',
+    name: 'Google Index Checker',
+    group: 'Indexation',
+    description: 'Combine on-page, robots, and Google site: signals into one verdict.',
+    metaDescription:
+      'Check if Google can index a URL — robots.txt, noindex, canonicals, and site: signals in one report. Free Google index status checker.',
+  },
   // On-page
-  { slug: 'on-page-seo',      name: 'On-Page SEO Checker',      group: 'On-Page',              description: '17-point on-page audit with a 0–100 SEO score.' },
-  { slug: 'meta-tags',        name: 'Meta Tags Checker',        group: 'On-Page',              description: 'Inspect every meta and link tag, grouped by SEO purpose.' },
-  { slug: 'open-graph',       name: 'Open Graph Checker',       group: 'On-Page',              description: 'Validate Open Graph & Twitter cards with platform-specific previews.' },
-  { slug: 'schema-checker',   name: 'Schema Markup Checker',    group: 'On-Page',              description: 'Validate JSON-LD against Google rich-result requirements.' },
-  { slug: 'canonical-url',    name: 'Canonical URL Checker',    group: 'On-Page',              description: 'Audit canonical links from HTML and Link headers, follow targets.' },
-  { slug: 'keyword-density',  name: 'Keyword Density Checker',  group: 'On-Page',              description: 'Top words, bigrams and trigrams with density percentages.' },
-  { slug: 'word-count',       name: 'Word Count Checker',       group: 'On-Page',              description: 'Words, characters, sentences, reading time and Flesch readability.' },
+  {
+    slug: 'on-page-seo',
+    name: 'On-Page SEO Checker',
+    group: 'On-Page',
+    description: '17-point on-page audit with a 0–100 SEO score.',
+    metaDescription:
+      'Run a 17-point on-page SEO audit with a 0–100 score. Check titles, headings, meta tags, images, and links — free, instant results.',
+  },
+  {
+    slug: 'meta-tags',
+    name: 'Meta Tags Checker',
+    group: 'On-Page',
+    description: 'Inspect every meta and link tag, grouped by SEO purpose.',
+    metaDescription:
+      'Inspect title, meta description, robots, canonical, and social tags on any URL. Free meta tags checker with SERP and social previews.',
+  },
+  {
+    slug: 'open-graph',
+    name: 'Open Graph Checker',
+    group: 'On-Page',
+    description: 'Validate Open Graph & Twitter cards with platform-specific previews.',
+    metaDescription:
+      'Validate Open Graph and Twitter Card tags with live Facebook, X, and LinkedIn previews. Free OG checker — fix broken social share images.',
+  },
+  {
+    slug: 'schema-checker',
+    name: 'Schema Markup Checker',
+    group: 'On-Page',
+    description: 'Validate JSON-LD against Google rich-result requirements.',
+    metaDescription:
+      'Validate JSON-LD structured data against Google rich result rules. Free schema markup checker — find missing fields and eligibility issues.',
+  },
+  {
+    slug: 'canonical-url',
+    name: 'Canonical URL Checker',
+    group: 'On-Page',
+    description: 'Audit canonical links from HTML and Link headers, follow targets.',
+    metaDescription:
+      'Audit canonical tags in HTML and HTTP headers. Free canonical URL checker — detect duplicates, chains, and mismatched canonical targets.',
+  },
+  {
+    slug: 'keyword-density',
+    name: 'Keyword Density Checker',
+    group: 'On-Page',
+    description: 'Top words, bigrams and trigrams with density percentages.',
+    metaDescription:
+      'Analyze keyword density, top words, bigrams, and trigrams on any page. Free keyword density tool for content and SEO optimization.',
+  },
+  {
+    slug: 'word-count',
+    name: 'Word Count Checker',
+    group: 'On-Page',
+    description: 'Words, characters, sentences, reading time and Flesch readability.',
+    metaDescription:
+      'Count words, characters, sentences, and reading time. Free word count checker with Flesch readability score for writers and SEOs.',
+  },
   // Links & redirects
-  { slug: 'link-checker',     name: 'Broken Link Checker',      group: 'Links & Redirects',    description: 'Probe every link on a page in parallel, classify broken vs healthy.' },
-  { slug: 'redirect-checker', name: 'Redirect Checker',         group: 'Links & Redirects',    description: 'Trace every hop, classify 301/302/scheme/host changes, surface SEO issues.' },
-  { slug: 'http-status',      name: 'HTTP Status Checker',      group: 'Links & Redirects',    description: 'Single + bulk status checks with full response headers.' },
+  {
+    slug: 'link-checker',
+    name: 'Broken Link Checker',
+    group: 'Links & Redirects',
+    description: 'Probe every link on a page in parallel, classify broken vs healthy.',
+    metaDescription:
+      'Find broken links on any page — internal and external URLs checked in parallel. Free broken link checker for site audits and QA.',
+  },
+  {
+    slug: 'redirect-checker',
+    name: 'Redirect Checker',
+    group: 'Links & Redirects',
+    description: 'Trace every hop, classify 301/302/scheme/host changes, surface SEO issues.',
+    metaDescription:
+      'Trace redirect chains hop by hop — 301, 302, HTTPS, and host changes. Free redirect checker for migrations and SEO troubleshooting.',
+  },
+  {
+    slug: 'http-status',
+    name: 'HTTP Status Checker',
+    group: 'Links & Redirects',
+    description: 'Single + bulk status checks with full response headers.',
+    metaDescription:
+      'Check HTTP status codes for single URLs or bulk lists. Free HTTP status checker — see 200, 301, 404, 500 responses and full headers.',
+  },
   // Performance
-  { slug: 'gzip-checker',     name: 'Gzip / Brotli Checker',    group: 'Performance',          description: 'Measure real wire-bytes vs decompressed size and savings.' },
-  { slug: 'page-size',        name: 'Page Size Checker',        group: 'Performance',          description: 'Total page weight by resource type with composition chart.' },
-  { slug: 'page-speed',       name: 'Page Speed Checker',       group: 'Performance',          description: 'Real network timings: DNS, TCP, TLS, TTFB, total download.' },
-  { slug: 'mobile-friendly',  name: 'Mobile Friendly Test',     group: 'Performance',          description: 'Audit viewport, responsive images, fonts and touch readiness.' },
+  {
+    slug: 'gzip-checker',
+    name: 'Gzip / Brotli Checker',
+    group: 'Performance',
+    description: 'Measure real wire-bytes vs decompressed size and savings.',
+    metaDescription:
+      'Test Gzip and Brotli compression on any URL. Free compression checker — measure wire size, savings, and Content-Encoding headers.',
+  },
+  {
+    slug: 'page-size',
+    name: 'Page Size Checker',
+    group: 'Performance',
+    description: 'Total page weight by resource type with composition chart.',
+    metaDescription:
+      'Measure total page weight and resource breakdown by type. Free page size checker — find heavy images, scripts, and CSS slowing your site.',
+  },
+  {
+    slug: 'page-speed',
+    name: 'Page Speed Checker',
+    group: 'Performance',
+    description: 'Real network timings: DNS, TCP, TLS, TTFB, total download.',
+    metaDescription:
+      'Measure real page speed — DNS, TLS, TTFB, and total download time. Free page speed checker with network timing breakdown per URL.',
+  },
+  {
+    slug: 'mobile-friendly',
+    name: 'Mobile Friendly Test',
+    group: 'Performance',
+    description: 'Audit viewport, responsive images, fonts and touch readiness.',
+    metaDescription:
+      'Test mobile-friendliness — viewport, tap targets, font sizes, and responsive images. Free mobile friendly checker for any URL.',
+  },
   // Domain & server
-  { slug: 'ssl-checker',      name: 'SSL Certificate Checker',  group: 'Domain & Server',      description: 'Real TLS handshake, certificate chain, hostname match, key strength.' },
-  { slug: 'domain-age',       name: 'Domain Age Checker',       group: 'Domain & Server',      description: 'WHOIS-driven creation date, registrar, expiry and statuses.' },
-  { slug: 'ip-lookup',        name: 'IP Lookup',                group: 'Domain & Server',      description: 'DNS sweep, reverse DNS, IP geolocation and ASN ownership.' },
+  {
+    slug: 'ssl-checker',
+    name: 'SSL Certificate Checker',
+    group: 'Domain & Server',
+    description: 'Real TLS handshake, certificate chain, hostname match, key strength.',
+    metaDescription:
+      'Check SSL certificate expiry, chain, hostname match, and TLS version. Free SSL checker — catch trust errors before visitors do.',
+  },
+  {
+    slug: 'domain-age',
+    name: 'Domain Age Checker',
+    group: 'Domain & Server',
+    description: 'WHOIS-driven creation date, registrar, expiry and statuses.',
+    metaDescription:
+      'Look up domain age, creation date, registrar, and expiry via WHOIS. Free domain age checker — verify trust and renewal dates instantly.',
+  },
+  {
+    slug: 'ip-lookup',
+    name: 'IP Lookup',
+    group: 'Domain & Server',
+    description: 'DNS sweep, reverse DNS, IP geolocation and ASN ownership.',
+    metaDescription:
+      'Resolve domain to IP with DNS records, geolocation, ASN, and reverse DNS. Free IP lookup tool — A, AAAA, MX, TXT, and more.',
+  },
 ];
 
 /** Display order on the home page (must match each tool’s `group`). */
