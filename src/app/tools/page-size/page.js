@@ -57,7 +57,7 @@ export default function PageSizePage() {
 
 function ResultBlock({ data, filter, setFilter }) {
   const { htmlSize, totalPageSize, totalPageSizeFormatted, totalExternalSize, externalResourceCount,
-          byType, resources, issues, summary, truncated, htmlSizeFormatted, totalExternalSizeFormatted } = data;
+    byType, resources, issues, summary, truncated, htmlSizeFormatted, totalExternalSizeFormatted } = data;
   const banner = summary.fail ? 'danger' : summary.warn ? 'warning' : 'success';
   const types = Object.entries(byType).sort((a, b) => b[1].size - a[1].size);
 
@@ -138,11 +138,149 @@ function Article() {
   return (
     <article className="tool-article">
       <h2>Page Weight: Why Bytes Still Matter</h2>
-      <p>The HTTP Archive’s long-running data shows that the median web page now ships ~2.4 MB to mobile devices. That weight is paid for by your users — every byte costs them battery, data, and time. Google’s Core Web Vitals don’t directly measure size, but Largest Contentful Paint and Interaction to Next Paint correlate strongly with how heavy your page is.</p>
-      <h3>What this tool measures</h3>
-      <p>We download the HTML, then walk every <code>&lt;link&gt;</code>, <code>&lt;script&gt;</code>, <code>&lt;img&gt;</code>, <code>srcset</code>, <code>&lt;source&gt;</code>, video/audio source, preload, and icon link. For each external resource we send a HEAD request (falling back to GET when servers reject HEAD) and record the response’s actual size. Inline data: URIs are listed but not counted.</p>
-      <h3>Performance budgets that work</h3>
-      <p>For mobile-first sites a useful budget is roughly: HTML ≤ 100 KB, total CSS ≤ 100 KB, total JS ≤ 350 KB (parsed/compressed), images ≤ 1 MB on the initial viewport, and a total weight under 1.5 MB. Heavier pages are still possible to make fast — but they require very deliberate optimisation (HTTP/3, Brotli, lazy-loading, image responsive variants, font subsetting).</p>
+      <p>Page size is one of the most critical factors affecting website performance, user experience, and <strong>mobile SEO</strong>. According to <a href="https://httparchive.org/reports/state-of-the-web" target="_blank" rel="noopener noreferrer">HTTP Archive</a>, the median web page now ships approximately 2.4 MB to mobile devices. That weight is paid for by your users — every byte costs them battery, data, and time. Google's <strong>Core Web Vitals</strong> don't directly measure size, but Largest Contentful Paint (LCP) and Interaction to Next Paint (INP) correlate strongly with how heavy your page is.</p>
+
+      <p>The <strong>Page Size Checker</strong> provides you with a comprehensive breakdown of exactly what contributes to your page weight, helping you identify optimization opportunities that can dramatically improve load times and user satisfaction.</p>
+
+      <h2>What This Tool Measures</h2>
+      <p>Our <strong>Page Size Checker</strong> downloads the HTML, then walks through every <code>&lt;link&gt;</code>, <code>&lt;script&gt;</code>, <code>&lt;img&gt;</code>, <code>srcset</code>, <code>&lt;source&gt;</code>, video/audio source, preload, and icon link. For each external resource we send a HEAD request (falling back to GET when servers reject HEAD) and record the response's actual size. Inline data: URIs are listed but not counted.</p>
+
+      <p>Understanding your page size is essential for creating a <strong>mobile-friendly website</strong>. Combined with our <a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a>, you can ensure your site delivers a fast, responsive experience on all devices.</p>
+
+      <h3>What This Tool Measures</h3>
+      <ul>
+        <li><strong>HTML Size:</strong> The decompressed size of your main HTML document</li>
+        <li><strong>CSS Stylesheets:</strong> All linked CSS files that style your page</li>
+        <li><strong>JavaScript Files:</strong> All scripts that add interactivity and functionality</li>
+        <li><strong>Images:</strong> All image assets including those in <code>srcset</code> and <code>&lt;source&gt;</code> elements</li>
+        <li><strong>Fonts:</strong> Web fonts loaded from external sources</li>
+        <li><strong>Media Files:</strong> Video and audio content</li>
+        <li><strong>Preload Resources:</strong> Assets loaded early to improve performance</li>
+      </ul>
+
+      <h2>Performance Budgets That Work</h2>
+      <p>For mobile-first sites a useful budget is roughly: HTML ≤ 100 KB, total CSS ≤ 100 KB, total JS ≤ 350 KB (parsed/compressed), images ≤ 1 MB on the initial viewport, and a total weight under 1.5 MB. Heavier pages are still possible to make fast — but they require very deliberate optimisation.</p>
+
+      <p>Use our <a href="https://opensourcetools.online/tools/page-speed" target="_blank" rel="noopener noreferrer">Page Speed Checker</a> to measure how your page size affects load times, and <a href="https://opensourcetools.online/tools/gzip-checker" target="_blank" rel="noopener noreferrer">Gzip Checker</a> to verify your compression settings.</p>
+
+      <h2>Why Page Size Matters for SEO</h2>
+      <p>Page size directly impacts several key SEO factors:</p>
+
+      <h3>1. Loading Speed</h3>
+      <p>Larger pages take longer to load, especially on mobile networks. Google has confirmed that page speed is a ranking factor, with <strong>Core Web Vitals</strong> playing an increasingly important role in search rankings. According to <a href="https://web.dev/performance/" target="_blank" rel="noopener noreferrer">web.dev</a>, improving page speed can significantly boost your search visibility.</p>
+
+      <h3>2. User Experience</h3>
+      <p>Users expect pages to load in under 3 seconds. Research from <a href="https://www.thinkwithgoogle.com/marketing-strategies/app-and-mobile/mobile-page-speed-load-time/" target="_blank" rel="noopener noreferrer">Think with Google</a> shows that 53% of mobile users abandon sites that take longer than 3 seconds to load. Large page sizes directly contribute to slow load times and high bounce rates.</p>
+
+      <h3>3. Mobile-First Indexing</h3>
+      <p>With Google's <strong>mobile-first indexing</strong>, the mobile version of your site determines your rankings. Mobile connections are often slower than desktop, making page size even more critical for <strong>mobile SEO</strong> success.</p>
+
+      <h2>Common Page Size Issues and Solutions</h2>
+
+      <h3>1. Unoptimized Images</h3>
+      <p><strong>The Problem:</strong> Images often account for 50-80% of total page weight.</p>
+      <p><strong>The Fix:</strong> Compress images using modern formats like WebP or AVIF. Implement <strong>responsive images</strong> with <code>srcset</code> to serve appropriately sized images for different devices. Use our <a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a> to check your responsive image implementation.</p>
+
+      <h3>2. Bloated JavaScript</h3>
+      <p><strong>The Problem:</strong> Large JavaScript bundles slow down parsing and execution.</p>
+      <p><strong>The Fix:</strong> Implement code splitting, lazy loading, and tree shaking. Remove unused libraries and use smaller alternatives when possible. Our <a href="https://opensourcetools.online/tools/on-page-seo" target="_blank" rel="noopener noreferrer">On-Page SEO Checker</a> can help identify performance issues.</p>
+
+      <h3>3. Uncompressed Resources</h3>
+      <p><strong>The Problem:</strong> Resources are served without compression.</p>
+      <p><strong>The Fix:</strong> Enable Gzip or Brotli compression on your server. Verify your configuration with our <a href="https://opensourcetools.online/tools/gzip-checker" target="_blank" rel="noopener noreferrer">Gzip Checker</a>.</p>
+
+      <h3>4. Multiple Font Weights and Formats</h3>
+      <p><strong>The Problem:</strong> Loading many font weights and formats adds significant weight.</p>
+      <p><strong>The Fix:</strong> Limit font weights to 2-3 per font family. Use <code>font-display: swap</code> to ensure text remains visible during font loading. Consider using system fonts for <strong>mobile-friendly websites</strong>.</p>
+
+      <h2>How to Optimize Your Page Size</h2>
+
+      <h3>1. Audit Your Resources</h3>
+      <p>Start by running our <strong>Page Size Checker</strong> to identify your largest resources. Look for opportunities to remove, replace, or optimize the biggest offenders. Our <a href="https://opensourcetools.online/tools/page-size" target="_blank" rel="noopener noreferrer">Page Size Tool</a> provides detailed breakdowns by resource type.</p>
+
+      <h3>2. Implement Lazy Loading</h3>
+      <p>Lazy loading defers the loading of offscreen images and content until users scroll to them. This significantly reduces initial page weight and improves perceived performance. <a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading" target="_blank" rel="noopener noreferrer">MDN Web Docs</a> provides comprehensive guidance on implementing lazy loading.</p>
+
+      <h3>3. Use Modern Image Formats</h3>
+      <p>WebP and AVIF offer superior compression compared to JPEG and PNG. <a href="https://developers.google.com/speed/webp" target="_blank" rel="noopener noreferrer">Google's WebP documentation</a> demonstrates how these formats can reduce image sizes by 25-35% without quality loss.</p>
+
+      <h3>4. Minify and Bundle</h3>
+      <p>Minify CSS and JavaScript to remove unnecessary characters. Bundle multiple files to reduce HTTP requests. Use tools like <a href="https://webpack.js.org/" target="_blank" rel="noopener noreferrer">Webpack</a> or <a href="https://esbuild.github.io/" target="_blank" rel="noopener noreferrer">esbuild</a> for efficient bundling and minification.</p>
+
+      <h3>5. Enable Caching</h3>
+      <p>Implement browser caching to serve cached resources to returning visitors. This reduces server requests and improves load times for repeat visits. Use our <a href="https://opensourcetools.online/tools/http-status" target="_blank" rel="noopener noreferrer">HTTP Status Checker</a> to verify your caching headers.</p>
+
+      <h2>Monitoring Page Size Over Time</h2>
+      <p>Page size tends to grow as new features are added. Regular monitoring with our <strong>Page Size Checker</strong> helps you:</p>
+      <ul>
+        <li>Track size regressions before they impact performance</li>
+        <li>Validate optimization efforts</li>
+        <li>Maintain performance budgets</li>
+        <li>Ensure your <strong>mobile-friendly website</strong> stays lightweight</li>
+      </ul>
+
+      <p>Combine with our <a href="https://opensourcetools.online/tools/page-speed" target="_blank" rel="noopener noreferrer">Page Speed Checker</a> to see how size changes affect load times, and <a href="https://opensourcetools.online/tools/redirect-checker" target="_blank" rel="noopener noreferrer">Redirect Checker</a> to ensure optimizations don't create redirect chains.</p>
+
+      <h2>Frequently Asked Questions (FAQs)</h2>
+
+      <h3>What is the Page Size Checker?</h3>
+      <p>The <strong>Page Size Checker</strong> is a tool that analyzes your webpage's total weight by measuring the size of HTML, CSS, JavaScript, images, fonts, and other resources. It provides a detailed breakdown of what contributes to your page's load time.</p>
+
+      <h3>How does page size affect SEO?</h3>
+      <p>Page size is directly correlated with load speed, which is a confirmed ranking factor for <strong>mobile SEO</strong>. Larger pages take longer to load, leading to higher bounce rates and lower engagement. Google's <strong>Core Web Vitals</strong> include metrics that are directly impacted by page size.</p>
+
+      <h3>What is a good page size for mobile?</h3>
+      <p>For optimal <strong>mobile SEO</strong>, aim for a total page size under 1.5 MB. Individual budgets should target: HTML under 100 KB, CSS under 100 KB, JavaScript under 350 KB, and initial viewport images under 1 MB. Use our <strong>Page Size Checker</strong> to benchmark your site.</p>
+
+      <h3>Why are images the largest part of my page?</h3>
+      <p>Images typically account for 50-80% of total page weight. This is normal but requires careful optimization. Use <strong>responsive images</strong> with <code>srcset</code>, compress images, and serve modern formats like WebP. Our <a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a> can help identify image optimization opportunities.</p>
+
+      <h3>How do I reduce my page size?</h3>
+      <p>Start by running our <strong>Page Size Checker</strong> to identify the largest resources. Then: compress images, minify CSS/JS, enable Gzip/Brotli compression, implement lazy loading, and use code splitting. Regularly monitor your progress with our <a href="https://opensourcetools.online/tools/page-size" target="_blank" rel="noopener noreferrer">Page Size Tool</a>.</p>
+
+      <h3>What's the difference between page size and page speed?</h3>
+      <p>Page size refers to the total bytes downloaded, while page speed measures how fast those bytes are delivered and rendered. A small page on a slow server can be slower than a larger page on a fast CDN. Use our <a href="https://opensourcetools.online/tools/page-speed" target="_blank" rel="noopener noreferrer">Page Speed Checker</a> together with the <strong>Page Size Checker</strong> for a complete picture.</p>
+
+      <h3>How often should I check my page size?</h3>
+      <p>Check your page size with our <strong>Page Size Checker</strong> whenever you add new features, update your theme, or deploy significant changes. For e-commerce or high-traffic sites, weekly monitoring is recommended to catch size regressions early.</p>
+
+      <h3>Does Gzip compression affect my page size measurement?</h3>
+      <p>Our <strong>Page Size Checker</strong> measures actual bytes transferred. If your server uses Gzip or Brotli compression (verify with our <a href="https://opensourcetools.online/tools/gzip-checker" target="_blank" rel="noopener noreferrer">Gzip Checker</a>), the tool reports the compressed size—which is what users actually download.</p>
+
+      <h2>Conclusion</h2>
+      <p>Page size is one of the most influential factors in website performance, user experience, and <strong>mobile SEO</strong>. Our <strong>Page Size Checker</strong> provides the detailed analysis you need to identify optimization opportunities and maintain a fast, <strong>mobile-friendly website</strong>.</p>
+
+      <p>Remember that page size optimization is an ongoing process. Regular monitoring with our <strong>Page Size Checker</strong>, combined with our <a href="https://opensourcetools.online/tools/page-speed" target="_blank" rel="noopener noreferrer">Page Speed Checker</a> and <a href="https://opensourcetools.online/tools/gzip-checker" target="_blank" rel="noopener noreferrer">Gzip Checker</a>, will help you maintain optimal performance and satisfy Google's <strong>Core Web Vitals</strong> requirements.</p>
+
+      <p>Start optimizing your page size today—test your website now and deliver the fast, efficient experience that modern users expect and Google rewards.</p>
+
+      <h3>Related Tools for Comprehensive Website Analysis</h3>
+      <p>For a complete website optimization strategy, use these tools alongside our <strong>Page Size Checker</strong>:</p>
+      <ul>
+        <li><a href="https://opensourcetools.online/tools/page-speed" target="_blank" rel="noopener noreferrer">Page Speed Checker</a> - Measure load performance</li>
+        <li><a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a> - Ensure mobile optimization</li>
+        <li><a href="https://opensourcetools.online/tools/gzip-checker" target="_blank" rel="noopener noreferrer">Gzip Compression Checker</a> - Verify compression settings</li>
+        <li><a href="https://opensourcetools.online/tools/on-page-seo" target="_blank" rel="noopener noreferrer">On-Page SEO Checker</a> - Optimize content</li>
+        <li><a href="https://opensourcetools.online/tools/ssl-checker" target="_blank" rel="noopener noreferrer">SSL Certificate Checker</a> - Ensure secure connections</li>
+        <li><a href="https://opensourcetools.online/tools/http-status" target="_blank" rel="noopener noreferrer">HTTP Status Checker</a> - Monitor server responses</li>
+        <li><a href="https://opensourcetools.online/tools/redirect-checker" target="_blank" rel="noopener noreferrer">Redirect Checker</a> - Optimize URL forwarding</li>
+        <li><a href="https://opensourcetools.online/tools/canonical-url" target="_blank" rel="noopener noreferrer">Canonical URL Checker</a> - Prevent duplicate content</li>
+        <li><a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Validator</a> - Ensure discoverability</li>
+        <li><a href="https://opensourcetools.online/tools/schema-checker" target="_blank" rel="noopener noreferrer">Schema Validator</a> - Implement structured data</li>
+        <li><a href="https://opensourcetools.online/tools/link-checker" target="_blank" rel="noopener noreferrer">Link Checker</a> - Ensure all links work</li>
+        <li><a href="https://opensourcetools.online/tools/word-count" target="_blank" rel="noopener noreferrer">Word Count Tool</a> - Measure content depth</li>
+        <li><a href="https://opensourcetools.online/tools/keyword-density" target="_blank" rel="noopener noreferrer">Keyword Density Tool</a> - Optimize content relevance</li>
+        <li><a href="https://opensourcetools.online/tools/open-graph" target="_blank" rel="noopener noreferrer">Open Graph Inspector</a> - Optimize social sharing</li>
+        <li><a href="https://opensourcetools.online/tools/robots-txt" target="_blank" rel="noopener noreferrer">Robots.txt Tester</a> - Verify crawler directives</li>
+      </ul>
+
+      <p>For further reading on web performance optimization, consult these authoritative resources:</p>
+      <ul>
+        <li><a href="https://developers.google.com/speed" target="_blank" rel="noopener noreferrer">Google Page Speed Insights</a></li>
+        <li><a href="https://web.dev/performance/" target="_blank" rel="noopener noreferrer">web.dev Performance Guides</a></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance" target="_blank" rel="noopener noreferrer">MDN Web Performance Documentation</a></li>
+        <li><a href="https://httparchive.org/reports/state-of-the-web" target="_blank" rel="noopener noreferrer">HTTP Archive Web Almanac</a></li>
+      </ul>
     </article>
   );
 }
