@@ -210,7 +210,7 @@ function Article() {
       <h2>UUID Version 4 vs. Version 7 Comparison</h2>
 
       <ul>
-        <li><strong>UUID Version 4 (Pure Randomness):</strong> Generated using 122 bits of pseudo-random entropy. The collision probability is astronomically small ($1 \text{ in } 2^{122}$), but random distribution causes severe B-Tree database index fragmentation.</li>
+        <li><strong>UUID Version 4 (Pure Randomness):</strong> Generated using 122 bits of pseudo-random entropy. The collision probability is astronomically small (1 in 2^122), but random distribution causes severe B-Tree database index fragmentation.</li>
         <li><strong>UUID Version 7 (Time-Ordered):</strong> Combines a 48-bit Unix epoch millisecond timestamp with 74 bits of random entropy. Because IDs are monotonically increasing over time, they index cleanly in PostgreSQL, MySQL, and SQLite without database page splits.</li>
       </ul>
 
