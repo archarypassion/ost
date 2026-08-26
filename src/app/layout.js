@@ -10,7 +10,7 @@ const siteUrl = getSiteUrl();
 const googleVerification = "FClmBzRS03b9wUSRR5L5SPTE6rE5v5Wsgy8l6A_uSNc";
 const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || null;
 const yandexVerification = process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || null;
-const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || null; // e.g. "ca-pub-1234567890123456"
+const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || "ca-pub-8476288439860728";
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
@@ -40,6 +40,9 @@ export const metadata = {
   ],
   authors: [{ name: SITE_NAME }],
   alternates: { canonical: "/" },
+  other: {
+    "google-adsense-account": "ca-pub-8476288439860728",
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
@@ -64,7 +67,7 @@ export const metadata = {
       "max-snippet": -1,
     },
   },
-  // Site-verification meta tags. Each is omitted when its env var is not set.
+  // Site-verification meta tags.
   verification: {
     google: googleVerification || undefined,
     other: {
@@ -72,8 +75,7 @@ export const metadata = {
       ...(yandexVerification
         ? { "yandex-verification": yandexVerification }
         : {}),
-      // Google AdSense site-association tag.
-      ...(adsenseClient ? { "google-adsense-account": adsenseClient } : {}),
+      "google-adsense-account": "ca-pub-8476288439860728",
     },
   },
 };

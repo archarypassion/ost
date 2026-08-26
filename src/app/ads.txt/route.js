@@ -5,10 +5,9 @@
  * If unset, returns 404 so crawlers do not cache a wrong publisher id.
  */
 export async function GET() {
-  const raw = process.env.NEXT_PUBLIC_ADSENSE_ADS_TXT_LINE?.trim();
-  if (!raw) {
-    return new Response(null, { status: 404 });
-  }
+  const raw =
+    process.env.NEXT_PUBLIC_ADSENSE_ADS_TXT_LINE?.trim() ||
+    'google.com, pub-8476288439860728, DIRECT, f08c47fec0942fa0';
   const body = raw.endsWith('\n') ? raw : `${raw}\n`;
   return new Response(body, {
     headers: {
