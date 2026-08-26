@@ -71,6 +71,31 @@ export default function Layout({ children }) {
           <main className="main-content">
             <PagePathBar />
             {children}
+            <footer style={{ marginTop: '4rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+              <span>© {new Date().getFullYear()} OpenSourceTools. All rights reserved.</span>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <a href="/privacy" style={{ color: 'var(--text-secondary)' }}>Privacy Policy</a>
+                <a href="/terms" style={{ color: 'var(--text-secondary)' }}>Terms</a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new Event('open-consent-settings'));
+                    }
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'var(--lv2-blue-light)',
+                    cursor: 'pointer',
+                    font: 'inherit',
+                  }}
+                >
+                  Privacy &amp; Cookie Settings
+                </button>
+              </div>
+            </footer>
           </main>
         </div>
       </div>

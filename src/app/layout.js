@@ -80,11 +80,51 @@ export const metadata = {
   },
 };
 
+import ConsentBanner from "@/components/ConsentBanner";
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" data-theme="light" className={dmSans.className}>
+      <head>
+        {/* Google Consent Mode v2 Default Initialization */}
+        <script
+          id="google-consent-mode-init"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              (function() {
+                try {
+                  var stored = localStorage.getItem('ost_user_consent_v2');
+                  if (stored) {
+                    var prefs = JSON.parse(stored);
+                    gtag('consent', 'default', {
+                      'ad_storage': prefs.marketing ? 'granted' : 'denied',
+                      'ad_user_data': prefs.marketing ? 'granted' : 'denied',
+                      'ad_personalization': prefs.personalization ? 'granted' : 'denied',
+                      'analytics_storage': prefs.analytics ? 'granted' : 'denied',
+                      'wait_for_update': 500
+                    });
+                    return;
+                  }
+                } catch(e) {}
+                gtag('consent', 'default', {
+                  'ad_storage': 'denied',
+                  'ad_user_data': 'denied',
+                  'ad_personalization': 'denied',
+                  'analytics_storage': 'denied',
+                  'wait_for_update': 500
+                });
+              })();
+            `,
+          }}
+        />
+      </head>
       <body suppressHydrationWarning>
         {children}
+
+        {/* Global Google-Certified CMP & GDPR Consent Banner */}
+        <ConsentBanner />
 
         {/* Google AdSense loader — only injected when an AdSense client ID is configured. */}
         {adsenseClient && (

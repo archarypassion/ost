@@ -33,6 +33,26 @@ export default function LandingSiteFooter() {
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/terms">Terms of Service</Link>
           <Link href="/disclaimer">Disclaimer</Link>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('open-consent-settings'));
+              }
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              font: 'inherit',
+              fontSize: '0.875rem',
+            }}
+          >
+            Cookie Preferences
+          </button>
           <a href={`mailto:${CONTACT_EMAIL}`}>Help: {CONTACT_EMAIL}</a>
         </div>
       </div>
@@ -44,6 +64,25 @@ export default function LandingSiteFooter() {
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
           <Link href="/disclaimer">Disclaimer</Link>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('open-consent-settings'));
+              }
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              font: 'inherit',
+              fontSize: '0.8125rem',
+            }}
+          >
+            Privacy &amp; Cookie Settings
+          </button>
         </div>
       </div>
     </footer>
