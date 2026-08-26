@@ -36,6 +36,28 @@ import {
   Fingerprint,
   FileText,
   Image as ImageIcon,
+  ShieldCheck,
+  MailCheck,
+  Bot,
+  Share2,
+  Binary,
+  Contrast,
+  Braces,
+  CodeXml,
+  Languages,
+  ImageOff,
+  BookOpen,
+  Shuffle,
+  Network,
+  Radio,
+  Cookie,
+  Smile,
+  CaseSensitive,
+  FileCode,
+  Key,
+  ListFilter,
+  PenTool,
+  ShieldAlert,
 } from 'lucide-react';
 import LandingSiteFooter from '@/components/LandingSiteFooter';
 import {
@@ -46,27 +68,63 @@ import {
 } from '@/lib/tools-catalog';
 
 const ICON_BY_SLUG = {
+  // Indexation
   'noindex-checker': FileSearch,
   'robots-txt': FileText,
+  'robots-generator': Bot,
   'sitemap-checker': Map,
   'google-index': Search,
+  // On-Page
   'on-page-seo': Activity,
   'meta-tags': Tag,
+  'meta-description-generator': PenTool,
   'open-graph': ImageIcon,
+  'social-preview': Share2,
   'schema-checker': Code2,
+  'schema-generator': Sparkles,
   'canonical-url': Fingerprint,
+  'hreflang-generator': Languages,
+  'broken-image-checker': ImageOff,
   'keyword-density': Hash,
   'word-count': Type,
+  'readability-checker': BookOpen,
+  'slug-generator': FileText,
+  // Links & Redirects
   'link-checker': LinkIcon,
   'redirect-checker': Repeat,
   'http-status': Activity,
+  'utm-builder': Share2,
+  'url-encoder': Binary,
+  'keyword-mixer': Shuffle,
+  // Performance
   'gzip-checker': Archive,
   'page-size': Maximize,
   'page-speed': Zap,
   'mobile-friendly': Smartphone,
+  'color-contrast': Contrast,
+  // Domain & Security
   'ssl-checker': Lock,
+  'security-headers': ShieldCheck,
+  'dmarc-checker': MailCheck,
+  'dns-propagation': Network,
+  'http-protocol-checker': Radio,
+  'cookie-checker': Cookie,
+  'favicon-checker': Smile,
   'domain-age': Calendar,
   'ip-lookup': Globe,
+  // Developer Utilities
+  'json-formatter': Braces,
+  'case-converter': CaseSensitive,
+  'base64-encoder': Binary,
+  'regex-tester': Code2,
+  'markdown-previewer': FileCode,
+  'css-minifier': FileCode,
+  'uuid-generator': Key,
+  'hash-generator': Fingerprint,
+  'text-deduplicator': ListFilter,
+  'lorem-generator': FileText,
+  'cors-checker': ShieldAlert,
+  'html-entity': CodeXml,
 };
 
 const ALL_TOOLS = TOOLS.map((t) => ({
@@ -75,7 +133,20 @@ const ALL_TOOLS = TOOLS.map((t) => ({
   icon: ICON_BY_SLUG[t.slug] || Activity,
 }));
 
-const GROUP_FILTERS = ['All', ...HOME_GROUP_ORDER];
+/* Category accent colors for the new row-list design */
+const GROUP_ACCENTS = {
+  'Indexation':          { color: '#3B82F6', glow: 'rgba(59,130,246,0.18)',  bg: 'rgba(59,130,246,0.07)' },
+  'On-Page':             { color: '#8B5CF6', glow: 'rgba(139,92,246,0.18)', bg: 'rgba(139,92,246,0.07)' },
+  'Links & Redirects':   { color: '#06B6D4', glow: 'rgba(6,182,212,0.18)',  bg: 'rgba(6,182,212,0.07)'  },
+  'Performance':         { color: '#10B981', glow: 'rgba(16,185,129,0.18)', bg: 'rgba(16,185,129,0.07)' },
+  'Domain & Server':     { color: '#F59E0B', glow: 'rgba(245,158,11,0.18)', bg: 'rgba(245,158,11,0.07)'  },
+  'Developer Utilities': { color: '#EC4899', glow: 'rgba(236,72,153,0.18)', bg: 'rgba(236,72,153,0.07)' },
+};
+
+function colorMixWithAlpha(hex, alpha) {
+  if (!hex || !hex.startsWith('#')) return hex;
+  return `${hex}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`;
+}
 
 const FEATURE_BENTO = [
   {
@@ -152,7 +223,8 @@ const SCAN_DEMO_ROWS = [
 
 export default function Home() {
   const [theme, setTheme] = useState('light');
-  const [activeGroup, setActiveGroup] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('All');
 
   useEffect(() => {
     const saved = (typeof window !== 'undefined' && localStorage.getItem('theme')) || 'light';
@@ -169,20 +241,36 @@ export default function Home() {
     }
   };
 
-  // Grouped tool list filtered by category. Memoized so we don't re-walk the catalog
-  // on every render.
+  // Filtered grouped list by search query and category
   const filteredGroups = useMemo(() => {
-    const matches = ALL_TOOLS.filter(
-      (t) => activeGroup === 'All' || t.group === activeGroup,
-    );
-    return HOME_GROUP_ORDER.map((groupKey) => {
-      const meta = HOME_GROUP_META[groupKey];
-      const tools = matches.filter((t) => t.group === groupKey);
-      return { key: groupKey, title: meta.title, description: meta.description, tools };
-    }).filter((g) => g.tools.length > 0);
-  }, [activeGroup]);
+    const q = searchQuery.trim().toLowerCase();
+    return HOME_GROUP_ORDER
+      .filter((groupKey) => selectedGroup === 'All' || selectedGroup === groupKey)
+      .map((groupKey) => {
+        const meta = HOME_GROUP_META[groupKey];
+        const tools = ALL_TOOLS.filter((t) => {
+          if (t.group !== groupKey) return false;
+          if (!q) return true;
+          return (
+            t.name.toLowerCase().includes(q) ||
+            t.description.toLowerCase().includes(q) ||
+            t.slug.toLowerCase().includes(q)
+          );
+        });
+        return {
+          key: groupKey,
+          title: meta.title,
+          description: meta.description,
+          tools,
+          accent: GROUP_ACCENTS[groupKey] || GROUP_ACCENTS['Indexation'],
+        };
+      })
+      .filter((g) => g.tools.length > 0);
+  }, [searchQuery, selectedGroup]);
 
-  const totalMatching = filteredGroups.reduce((sum, g) => sum + g.tools.length, 0);
+  const totalFilteredTools = useMemo(() => {
+    return filteredGroups.reduce((acc, g) => acc + g.tools.length, 0);
+  }, [filteredGroups]);
 
   return (
     <div className="landing-v2">
@@ -358,7 +446,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Tool catalog ── */}
+      {/* ── Tool catalog — command palette row list with instant search ── */}
       <section className="lv2-catalog" id="tools">
         <div className="lv2-section-head">
           <span className="lv2-tag">The full toolkit</span>
@@ -366,71 +454,113 @@ export default function Home() {
             {TOOLS.length} tools, <span className="lv2-grad">one platform</span>
           </h2>
           <p className="lv2-section-sub">
-            Pick a category to jump straight to the tool you need.
+            Search or filter across all {TOOLS.length} technical diagnostics and webmaster utilities.
           </p>
         </div>
 
-        {/* Category filter — one tap to narrow the catalog. */}
-        <div className="lv2-cat-controls">
-          <div className="lv2-pills" role="tablist" aria-label="Filter tools by category">
-            {GROUP_FILTERS.map((g) => (
+        {/* Live Search & Category Filter Toolbar */}
+        <div style={{ maxWidth: '820px', margin: '0 auto 2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+          {/* Search Input */}
+          <div className="search-bar" style={{ width: '100%', maxWidth: '820px' }}>
+            <Search size={18} style={{ color: 'var(--text-secondary)', marginRight: '0.75rem', flexShrink: 0 }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={`Search ${TOOLS.length} tools (e.g. "json", "cookie", "meta", "dns", "contrast")...`}
+              className="search-input"
+              style={{ fontSize: '0.9375rem' }}
+            />
+            {searchQuery && (
               <button
-                key={g}
                 type="button"
-                role="tab"
-                aria-selected={activeGroup === g}
-                className={`lv2-pill-btn ${activeGroup === g ? 'active' : ''}`}
-                onClick={() => setActiveGroup(g)}
+                onClick={() => setSearchQuery('')}
+                className="lv2-pill-btn"
+                style={{ padding: '2px 8px', fontSize: '0.75rem' }}
               >
-                {g}
+                Clear
               </button>
-            ))}
+            )}
+          </div>
+
+          {/* Category Filter Chips */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+            {['All', ...HOME_GROUP_ORDER].map((group) => {
+              const isActive = selectedGroup === group;
+              const accent = GROUP_ACCENTS[group]?.color || 'var(--lv2-blue-light)';
+              return (
+                <button
+                  key={group}
+                  type="button"
+                  onClick={() => setSelectedGroup(group)}
+                  className={`lv2-pill-btn ${isActive ? 'active' : ''}`}
+                  style={{
+                    borderColor: isActive ? accent : undefined,
+                    color: isActive ? accent : undefined,
+                    backgroundColor: isActive ? colorMixWithAlpha(accent, 0.12) : undefined,
+                  }}
+                >
+                  {group}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {totalMatching === 0 ? (
-          <div className="lv2-cat-empty">
+        {filteredGroups.length === 0 ? (
+          <div className="lv2-cat-empty" style={{ margin: '2rem auto', maxWidth: '600px', textAlign: 'center', justifyContent: 'center' }}>
             <div>
-              <strong>No tools in this category yet.</strong>
-              <span>Try a different filter.</span>
+              <strong>No tools matched &quot;{searchQuery}&quot;</strong>
+              <span>Try searching for a different keyword or resetting your filter.</span>
             </div>
             <button
               type="button"
               className="lv2-btn-ghost"
-              onClick={() => setActiveGroup('All')}
+              onClick={() => { setSearchQuery(''); setSelectedGroup('All'); }}
             >
-              Show all tools
+              Reset Filters
             </button>
           </div>
         ) : (
-          <div className="lv2-cat-stack">
+          <div className="lv2-rowlist">
             {filteredGroups.map((cat) => (
-              <div key={cat.key} className="lv2-cat-group">
-                <div className="lv2-cat-group-head">
-                  <h3>
-                    {cat.title}
-                    <span className="lv2-cat-count">{cat.tools.length}</span>
-                  </h3>
-                  <p>{cat.description}</p>
+              <div key={cat.key} className="lv2-rowlist-group">
+                {/* Category divider label */}
+                <div className="lv2-rowlist-divider" style={{ '--cat-color': cat.accent.color }}>
+                  <span className="lv2-rowlist-divider-label">{cat.title.toUpperCase()}</span>
+                  <span className="lv2-rowlist-divider-line" />
+                  <span className="lv2-rowlist-divider-count">{cat.tools.length}</span>
                 </div>
-                <div className="lv2-cat-grid">
-                  {cat.tools.map((tool) => {
+
+                {/* Tool rows */}
+                <div className="lv2-rowlist-rows">
+                  {cat.tools.map((tool, idx) => {
                     const Icon = tool.icon || Activity;
                     return (
                       <Link
                         key={tool.path}
                         href={tool.path}
-                        className="lv2-tool-card"
-                        title={tool.description}
+                        className="lv2-row-item"
+                        style={{
+                          '--row-accent': cat.accent.color,
+                          '--row-glow': cat.accent.glow,
+                          '--row-bg': cat.accent.bg,
+                          animationDelay: `${idx * 35}ms`,
+                        }}
                       >
-                        <span className="lv2-tool-icon">
-                          <Icon size={18} />
+                        <span className="lv2-row-icon" style={{ '--row-accent': cat.accent.color }}>
+                          <Icon size={17} />
                         </span>
-                        <span className="lv2-tool-body">
-                          <span className="lv2-tool-name">{tool.name}</span>
-                          <span className="lv2-tool-desc">{tool.description}</span>
+                        <span className="lv2-row-content">
+                          <span className="lv2-row-name">{tool.name}</span>
+                          <span className="lv2-row-desc">{tool.description}</span>
                         </span>
-                        <ArrowRight size={16} className="lv2-tool-arrow" />
+                        <span className="lv2-row-meta">
+                          <span className="lv2-row-cat-badge" style={{ '--row-accent': cat.accent.color }}>
+                            {cat.key}
+                          </span>
+                          <ArrowRight size={15} className="lv2-row-arrow" />
+                        </span>
                       </Link>
                     );
                   })}

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function IpLookupPage() {
   const [input, setInput] = useState('');
@@ -145,301 +146,57 @@ function IpCard({ ip, standalone }) {
 function Article() {
   return (
     <article className="tool-article">
-      <h2>What an IP Lookup Tells You</h2>
-
+      <h2>DNS Zone Architecture, Autonomous Systems &amp; IP Routing</h2>
       <p>
-        When you type a website name into your browser, something invisible happens behind the scenes: your device
-        asks the internet, &ldquo;What is the actual address for this site?&rdquo; That address is called an{' '}
-        <a href="https://www.cloudflare.com/learning/ddos/what-is-an-ip-address/" target="_blank" rel="noreferrer">
-          IP address
-        </a>
-        . Think of it like a phone number for a computer on the internet. Every website, email server, and online
-        service has one — or often several.
+        An IP lookup performs bidirectional DNS resolution and Border Gateway Protocol (BGP) routing inspection. Resolving a domain to its underlying IPv4 (A) and IPv6 (AAAA) addresses exposes server hosting infrastructure, transit Autonomous System Numbers (ASNs), reverse DNS (PTR) records, and core zone configurations.
       </p>
 
-      <p>
-        An IP lookup takes a domain name (like <code>example.com</code>) or a raw IP address and shows you what is
-        connected to it. The IP address behind a domain reveals a surprising amount of useful information: the cloud
-        provider hosting it, the country and city of the data centre, the ASN (autonomous system) that owns the
-        network, and — through reverse DNS — sometimes the original hosting customer. For SEO and competitive
-        research, that data is gold. For everyday users, it is simply a fast way to understand who is really
-        running a website before you trust it, buy from it, or troubleshoot a problem.
-      </p>
-
-      <p>
-        You do not need to be a programmer to use this tool. Type any domain or IP into the search box above and
-        we handle the technical work. The sections below explain what you are looking at in plain language.
-      </p>
-
-      <h3>How Does a Domain Name Become an IP Address?</h3>
-
-      <p>
-        Humans remember names; computers remember numbers. The system that translates between them is called{' '}
-        <a href="https://www.icann.org/resources/pages/dns-what-is-2021-02-25-en" target="_blank" rel="noreferrer">
-          DNS
-        </a>{' '}
-        (Domain Name System). When you visit a site, your browser quietly asks a DNS server: &ldquo;What IP belongs
-        to this name?&rdquo; The answer comes back in milliseconds and your browser connects to that address.
-      </p>
-
-      <p>
-        DNS is not just one answer. A domain can have many records at once — some for web traffic, some for email,
-        some for security checks. That is why a full IP lookup is more useful than simply pinging a site. You see
-        the whole picture, not just the front door.
-      </p>
-
-      <h3>What We Resolve</h3>
-
-      <p>
-        We do a full DNS sweep of A, AAAA, NS, MX, TXT, SOA, and CAA records. Here is what each one means in
-        everyday terms:
-      </p>
+      <h2>Core DNS Zone Record Specifications</h2>
 
       <ul>
-        <li>
-          <strong>A and AAAA records</strong> — the main &ldquo;where is this website?&rdquo; answers. A records
-          point to older-style IPv4 addresses (four numbers like <code>93.184.216.34</code>). AAAA records point
-          to newer IPv6 addresses, which look longer and use letters and numbers.
-        </li>
-        <li>
-          <strong>NS records</strong> — show whose DNS is authoritative. Common names you might see include
-          Cloudflare, AWS Route 53, or Google Cloud DNS. This tells you who manages the domain&apos;s settings.
-        </li>
-        <li>
-          <strong>MX records</strong> — show the email provider. If a business uses Google Workspace or Microsoft
-          365, you will usually see it here.
-        </li>
-        <li>
-          <strong>TXT records</strong> — short text notes attached to a domain. The TXT list often reveals SPF,
-          DKIM, DMARC, and verification records (Google, Microsoft, Atlassian, etc.) that hint at which
-          third-party tools the site uses.{' '}
-          <a href="https://support.google.com/a/answer/33786" target="_blank" rel="noreferrer">
-            SPF
-          </a>{' '}
-          and{' '}
-          <a href="https://dmarc.org/overview/" target="_blank" rel="noreferrer">
-            DMARC
-          </a>{' '}
-          help prove that email from that domain is legitimate and not spoofed.
-        </li>
-        <li>
-          <strong>CNAME records</strong> — aliases that point one name at another. Many CDNs and website builders
-          use these so you only need to update one place when things change.
-        </li>
-        <li>
-          <strong>SOA records</strong> — technical housekeeping for the domain zone, including how often DNS
-          caches should refresh.
-        </li>
-        <li>
-          <strong>CAA records</strong> — a security setting that limits which companies are allowed to issue SSL
-          certificates for the domain.
-        </li>
+        <li><strong>A &amp; AAAA Records:</strong> Map hostnames to 32-bit IPv4 (e.g. <code>192.0.2.1</code>) and 128-bit IPv6 (e.g. <code>2001:db8::1</code>) network interfaces. Modern production websites require dual-stack deployment.</li>
+        <li><strong>MX Records:</strong> Mail Exchanger records specifying the mail servers responsible for accepting incoming email for the domain, ordered by priority.</li>
+        <li><strong>TXT Records (SPF, DKIM, DMARC):</strong> Text records containing domain verification strings and email authentication policies (e.g. <code>v=spf1 include:_spf.google.com ~all</code>).</li>
+        <li><strong>NS Records:</strong> Authoritative nameservers designated for delegating DNS zone authority.</li>
+        <li><strong>SOA Records:</strong> Start of Authority records defining zone serial numbers, refresh timers, retry intervals, and minimum TTL (negative caching).</li>
+        <li><strong>CAA Records:</strong> Certificate Authority Authorization records preventing unauthorized SSL certificate issuance.</li>
       </ul>
 
-      <p>
-        Together, these records paint a clear picture of how a site is set up — not just where it lives, but how
-        email is handled, which services are connected, and how seriously the owner takes security.
-      </p>
-
-      <h3>Reading Your Results: A Simple Walkthrough</h3>
+      <h2>Autonomous System Numbers (ASNs) &amp; BGP Anycast</h2>
 
       <p>
-        After you run a lookup, you will see a summary banner at the top showing how many records were found. Below
-        that, each IP address gets its own card with location details, timezone, coordinates, and the organisation
-        that owns the network block.
+        An <strong>Autonomous System (AS)</strong> is a connected group of IP routing prefixes controlled by one or more network operators under a single routing policy. The <strong>ASN</strong> identifies the hosting provider, ISP, or CDN operating the network (e.g. AS13335 for Cloudflare, AS15169 for Google).
       </p>
+      <p>
+        <strong>Anycast Routing:</strong> Global Content Delivery Networks announce the same IP prefix from hundreds of edge Points of Presence (PoPs) worldwide. Geolocation tools identify the nearest edge point rather than the origin server datacenter.
+      </p>
+
+      <h2>Reverse DNS (rDNS) &amp; PTR Verification</h2>
 
       <p>
-        <strong>Country and city</strong> tell you roughly where the server appears to be located.{' '}
-        <strong>ASN</strong> (Autonomous System Number) identifies the network operator — for example Amazon,
-        Google, or a local internet provider. <strong>Organisation</strong> is the company name tied to that
-        network. <strong>Reverse DNS</strong> shows whether the IP maps back to a readable hostname, which is
-        especially important for email servers.
+        Reverse DNS queries map an IP address back to its canonical hostname using specialized <code>.in-addr.arpa</code> (IPv4) or <code>.ip6.arpa</code> (IPv6) zones. Forward-Confirmed Reverse DNS (FCrDNS) is a primary requirement for:
       </p>
-
-      <p>
-        If something looks wrong — say your own site still points to an old host after a move — compare the IP
-        addresses here with what your hosting company gave you. Mismatches are one of the most common reasons a
-        website or email stops working after a migration.
-      </p>
-
-      <h3>IPv4 and IPv6: Why There Are Two Kinds of Address</h3>
-
-      <p>
-        The internet originally used IPv4, which provides about 4.3 billion unique addresses. That sounds like a lot,
-        but the world ran out years ago. IPv6 was introduced to solve the shortage and can support an almost
-        unlimited number of addresses. You can read a friendly overview on{' '}
-        <a href="https://www.cloudflare.com/learning/network-layer/what-is-ipv6/" target="_blank" rel="noreferrer">
-          Cloudflare&apos;s IPv6 guide
-        </a>
-        .
-      </p>
-
-      <p>
-        Most modern websites support both. If you only see IPv4 addresses for a site, it may still work fine for
-        most visitors today — but IPv6-only networks (common on some mobile carriers) could have trouble. Seeing
-        both A and AAAA records is generally a sign of a well-maintained setup.
-      </p>
-
-      <h3>What Is Reverse DNS and Why Does It Matter?</h3>
-
-      <p>
-        Normal DNS answers the question: &ldquo;What IP does this domain name point to?&rdquo; Reverse DNS flips
-        that around: &ldquo;What domain name is registered for this IP?&rdquo; This is done with a special record
-        type called a{' '}
-        <a href="https://www.cloudflare.com/learning/dns/dns-records/dns-ptr-record/" target="_blank" rel="noreferrer">
-          PTR record
-        </a>
-        .
-      </p>
-
-      <p>
-        For most casual browsing, reverse DNS does not affect you. But if you send email from your own server, missing
-        or incorrect reverse DNS is a common reason messages land in spam. Many businesses check it automatically.
-        It is also useful when a site sits behind a CDN: the forward address might show Cloudflare, but reverse DNS
-        on the origin IP can reveal the real hosting company underneath.
-      </p>
-
-      <h3>Geolocation Accuracy</h3>
-
-      <p>
-        IP geolocation is approximate. It is based on registries that map IP blocks to network owners; for cloud
-        and CDN IPs the location reported is usually the closest data centre rather than where the company is
-        registered. Anycast networks (Cloudflare, Fastly, AWS CloudFront) will resolve to whichever PoP (point of
-        presence) happens to be closest to our server, not yours.
-      </p>
-
-      <p>
-        In practice, this means country-level results are usually trustworthy, but city-level results can be off by
-        hundreds of kilometres — especially for large cloud providers with data centres everywhere. Coordinates on
-        the result card are estimates, not a GPS pin on someone&apos;s office. Use them as a rough guide, not as
-        proof of where a person or business physically sits.
-      </p>
-
-      <p>
-        If you need to understand why results differ between tools,{' '}
-        <a href="https://en.wikipedia.org/wiki/Internet_geolocation" target="_blank" rel="noreferrer">
-          IP geolocation
-        </a>{' '}
-        works by matching address ranges to databases that are updated regularly but never perfectly.
-      </p>
-
-      <h3>Everyday Reasons People Use IP Lookup</h3>
-
-      <p>
-        You do not need a technical background to get real value from this page. Here are situations where a quick
-        lookup saves time:
-      </p>
-
       <ul>
-        <li>
-          <strong>Checking a suspicious link</strong> — before clicking an unfamiliar shop or login page, see
-          whether it points to a reputable host or something unexpected.
-        </li>
-        <li>
-          <strong>After moving your website</strong> — confirm your domain now points to the new server and the
-          old IP is gone.
-        </li>
-        <li>
-          <strong>Email problems</strong> — inspect MX and TXT records to see if mail is routed correctly and
-          authentication is configured.
-        </li>
-        <li>
-          <strong>Comparing competitors</strong> — notice when a rival switches from shared hosting to a CDN or
-          cloud platform.
-        </li>
-        <li>
-          <strong>Understanding downtime</strong> — if a site is down, checking whether its IP changed can tell you
-          if DNS was updated incorrectly.
-        </li>
-        <li>
-          <strong>Verifying your own setup</strong> — small business owners often inherit DNS settings from a web
-          designer; this tool shows exactly what is live right now.
-        </li>
+        <li><strong>Email Deliverability:</strong> SMTP receivers reject mail from IP addresses without valid reverse PTR records matching the sending hostname.</li>
+        <li><strong>Search Bot Verification:</strong> Verifying legitimate Googlebot and Bingbot crawlers to prevent spoofed scraper access.</li>
+        <li><strong>Security Auditing:</strong> Inspect certificate bindings using our <Link href="/tools/ssl-checker">SSL Certificate Checker</Link> and verify domain history with our <Link href="/tools/domain-age">Domain Age Checker</Link>.</li>
       </ul>
 
-      <h3>What IP Lookup Cannot Tell You</h3>
+      <h2>Frequently Asked Questions</h2>
 
+      <h3>Why does my geolocation show a different country than my hosting provider?</h3>
       <p>
-        It is equally important to know the limits. An IP lookup will not show you private information about
-        individual visitors, exact street addresses, or who owns a website legally — only where the server appears
-        to be hosted. Two completely unrelated websites can share the same IP on budget shared hosting. A company
-        in London might host its site in Frankfurt because that data centre is faster or cheaper.
+        If your website uses a CDN (Cloudflare, Fastly, CloudFront), DNS queries resolve to the CDN&apos;s Anycast edge node nearest to the query origin, not the physical origin backend server.
       </p>
 
+      <h3>What is the difference between an A record and a CNAME record?</h3>
       <p>
-        Privacy tools, VPNs, and proxy services deliberately hide a user&apos;s real location, so never use IP
-        data alone to make serious legal or security decisions. Treat this tool as an infrastructure map, not a
-        detective dossier.
+        An <code>A</code> record maps a hostname directly to an IP address. A <code>CNAME</code> (Canonical Name) record is an alias that maps a hostname to another hostname. CNAME records cannot coexist with other records on the apex (root) domain per RFC 1034.
       </p>
 
-      <h3>Helpful Resources to Learn More</h3>
-
+      <h3>How do I verify if my server supports IPv6?</h3>
       <p>
-        If you want to go deeper, these trusted guides explain the same concepts from different angles. All links
-        open in a new tab.
-      </p>
-
-      <ul>
-        <li>
-          <a href="https://www.cloudflare.com/learning/dns/what-is-dns/" target="_blank" rel="noreferrer">
-            Cloudflare — What is DNS? (beginner-friendly)
-          </a>
-        </li>
-        <li>
-          <a href="https://www.cloudflare.com/learning/ddos/what-is-an-ip-address/" target="_blank" rel="noreferrer">
-            Cloudflare — What is an IP address?
-          </a>
-        </li>
-        <li>
-          <a href="https://www.icann.org/resources/pages/dns-what-is-2021-02-25-en" target="_blank" rel="noreferrer">
-            ICANN — What is the Domain Name System?
-          </a>
-        </li>
-        <li>
-          <a href="https://en.wikipedia.org/wiki/IP_address" target="_blank" rel="noreferrer">
-            Wikipedia — IP address (overview and history)
-          </a>
-        </li>
-        <li>
-          <a href="https://www.cloudflare.com/learning/dns/dns-records/dns-ptr-record/" target="_blank" rel="noreferrer">
-            Cloudflare — What is a DNS PTR record?
-          </a>
-        </li>
-        <li>
-          <a href="https://support.google.com/a/answer/33786" target="_blank" rel="noreferrer">
-            Google Workspace — SPF record setup guide
-          </a>
-        </li>
-        <li>
-          <a href="https://dmarc.org/overview/" target="_blank" rel="noreferrer">
-            DMARC.org — What is DMARC email authentication?
-          </a>
-        </li>
-        <li>
-          <a href="https://www.cloudflare.com/learning/network-layer/what-is-ipv6/" target="_blank" rel="noreferrer">
-            Cloudflare — What is IPv6?
-          </a>
-        </li>
-        <li>
-          <a href="https://en.wikipedia.org/wiki/Internet_geolocation" target="_blank" rel="noreferrer">
-            Wikipedia — How IP geolocation works
-          </a>
-        </li>
-        <li>
-          <a href="https://developer.mozilla.org/en-US/docs/Glossary/DNS" target="_blank" rel="noreferrer">
-            MDN Web Docs — DNS glossary entry
-          </a>
-        </li>
-      </ul>
-
-      <h3>Try It Now</h3>
-
-      <p>
-        The best way to understand IP lookup is to run one yourself. Enter your own domain, your email provider&apos;s
-        domain, or any IP you are curious about in the search box at the top of this page. Read through the records,
-        match them against what you expected, and keep this page bookmarked for the next time DNS changes or
-        something does not look right. No sign-up, no install — just type and look up.
+        Enter your domain in the tool above; if an <code>AAAA</code> record appears with valid geolocation and network ASN details, your domain is dual-stack IPv6 enabled.
       </p>
     </article>
   );

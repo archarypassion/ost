@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
 export default function OnPageSEO() {
@@ -233,152 +234,70 @@ function Italic({ children }) {
 function Article() {
   return (
     <article className="tool-article">
-      <h2>On-Page SEO: The Complete Practical Guide for Getting It Right</h2>
-      <p>Most conversations about SEO quickly drift toward link building, domain authority, and backlink profiles. And while all of that matters, there's a foundational layer that determines whether any of those off-page efforts will ever pay off — and that's on-page SEO. If your pages aren't properly optimized from the inside, no amount of external authority is going to push them to the top of search results.</p>
+      <h2>The 17-Point On-Page SEO Technical Audit Framework</h2>
+      <p>
+        On-page search engine optimization encompasses all technical, semantic, and structural signals implemented directly within a webpage's HTML code to optimize discoverability, crawlability, and ranking potential.
+      </p>
 
-      <p>According to <a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide" target="_blank" rel="noopener noreferrer">Google's SEO Starter Guide</a>, on-page optimization is the foundation of good SEO. Our <strong>On-Page SEO Checker</strong> helps you identify and fix issues that could be holding your pages back from ranking well in search results.</p>
+      <h2>Core On-Page Evaluation Signals</h2>
 
-      <h2>What This Tool Does</h2>
-      <p>Our <strong>On-Page SEO Checker</strong> pulls the key signals from any URL and presents them in an easy-to-read format so you can instantly spot gaps. Check your pages before publishing, and run regular audits on your highest-traffic URLs to make sure nothing has drifted out of spec. Even a small technical slip — a missing title tag after a CMS update, a template change that accidentally removes meta descriptions — can have a meaningful negative impact on your organic performance.</p>
-
-      <p>This tool is essential for maintaining a <strong>mobile-friendly website</strong>. Combined with our <a href="https://opensourcetools.online/tools/meta-tags" target="_blank" rel="noopener noreferrer">Meta Tags Checker</a> and <a href="https://opensourcetools.online/tools/schema-checker" target="_blank" rel="noopener noreferrer">Schema Validator</a>, you can ensure your site is fully optimized for search engines.</p>
-
-      <h2>Why On-Page SEO Still Matters More Than Ever</h2>
-      <p>Some people assume that Google has become so sophisticated that it doesn't really need you to follow on-page optimization rules anymore. That's only partially true. Google's natural language processing has improved dramatically, yes — but that doesn't mean you should throw out the structured signals it uses to categorize and rank your content. Think of on-page optimization as giving Google a clear roadmap rather than making it guess. The easier you make it to understand your content, the more confidently it can rank you for the right searches.</p>
-
-      <h2>Title Tags: Your Most Important On-Page Element</h2>
-      <p>The HTML title tag is arguably the single most important on-page SEO element. It tells both Google and the user exactly what a page is about before they've even clicked on it. It's the blue clickable text you see in search results, and it's what appears in the browser tab when someone is on your page.</p>
-      <p>Best practices for title tags haven't changed much over the years. Keep them between 50 and 60 characters so they don't get truncated in SERPs. Put your primary keyword as close to the beginning as feels natural. Include your brand name, especially if it carries some recognition — typically at the end separated by a pipe or dash. And don't stuff it with keywords; that stopped working years ago and now actively hurts you.</p>
-
-      <p>According to <a href="https://moz.com/learn/seo/title-tag" target="_blank" rel="noopener noreferrer">Moz</a>, the title tag is the most important on-page SEO factor. Use our <a href="https://opensourcetools.online/tools/meta-tags" target="_blank" rel="noopener noreferrer">Meta Tags Checker</a> to verify your title tags are properly optimized.</p>
-
-      <h2>Meta Descriptions: Click-Through Rates Depend On These</h2>
-      <p>Meta descriptions don't directly influence ranking, but they dramatically influence click-through rate — and click-through rate does influence ranking indirectly. A well-written meta description is essentially your 155-character sales pitch. It should accurately summarize the page content, include your target keyword (Google will bold it in search results if it matches the query), and end with a subtle call to action when it makes sense.</p>
-      <p>The frustrating reality is that Google will sometimes rewrite your meta description if it thinks something else on your page better answers the user's query. But that doesn't mean you should skip writing one. Pages without meta descriptions look unfinished, and Google will grab a random snippet of text from your page that might not be flattering.</p>
-
-      <h2>Heading Structure: More Than Just Visual Formatting</h2>
-      <p>Headings — H1 through H6 — create both visual hierarchy for readers and semantic structure for crawlers. Your H1 should appear exactly once per page and should clearly state the page's primary topic, ideally including the main target keyword. Your H2 tags break your content into logical sections. H3 tags further subdivide those sections.</p>
-      <p>Common mistakes include having zero H1 tags (usually a template or CMS issue), having multiple H1 tags on the same page, and using headings purely for visual styling rather than semantic meaning. Some developers use CSS to make a paragraph look like a heading without actually using heading tags — this is invisible to search engines and a missed opportunity.</p>
-
-      <h2>Image Optimization: Alt Text Is Not Optional</h2>
-      <p>Every meaningful image on your page should have a descriptive alt attribute. Alt text serves two critical purposes: it tells screen readers what an image depicts (a major accessibility concern), and it tells search engines what the image shows. Without alt text, an image is essentially invisible to crawlers and contributes nothing to your page's relevance for visual search queries.</p>
-      <p>Alt text should be descriptive but concise. Describe what's in the image naturally. Avoid alt text like "image123.jpg" or stuffing it with keywords: "buy cheap blue widgets blue widget sale best widgets." A good rule of thumb: write it as if you're describing the image to someone who can't see it.</p>
-
-      <h2>Content Quality and Word Count</h2>
-      <p>There's an ongoing debate in the SEO community about minimum word counts. The honest answer is there's no magic number — a search query like "what time is it in Tokyo" can be perfectly answered in a single sentence. But for competitive informational queries, more depth usually correlates with higher rankings because it signals to Google that you've thoroughly covered the topic.</p>
-      <p>What matters far more than raw word count is topical depth and relevance. Does your page answer the user's question fully? Does it address the related questions they might have? Does it provide unique insight that other pages don't? Pages that genuinely satisfy user intent — regardless of length — are the ones that tend to rank and stay ranked.</p>
-
-      <p>Use our <a href="https://opensourcetools.online/tools/word-count" target="_blank" rel="noopener noreferrer">Word Count Checker</a> and <a href="https://opensourcetools.online/tools/keyword-density" target="_blank" rel="noopener noreferrer">Keyword Density Tool</a> to optimize your content length and keyword usage.</p>
-
-      <h2>Common On-Page SEO Issues and Solutions</h2>
-
-      <h3>1. Missing or Duplicate Title Tags</h3>
-      <p><strong>The Problem:</strong> Pages without unique title tags or with duplicate titles across pages.</p>
-      <p><strong>The Fix:</strong> Add unique, descriptive title tags (50-60 characters) to every page. Use our <strong>On-Page SEO Checker</strong> to identify missing or duplicate titles.</p>
-
-      <h3>2. Missing or Short Meta Descriptions</h3>
-      <p><strong>The Problem:</strong> Pages without meta descriptions or descriptions under 120 characters.</p>
-      <p><strong>The Fix:</strong> Write compelling meta descriptions (120-160 characters) that include your primary keyword.</p>
-
-      <h3>3. Poor Heading Structure</h3>
-      <p><strong>The Problem:</strong> Missing H1 tags, multiple H1 tags, or skipped heading levels.</p>
-      <p><strong>The Fix:</strong> Use one H1 per page, follow with H2 for sections, and H3 for subsections.</p>
-
-      <h3>4. Images Without Alt Text</h3>
-      <p><strong>The Problem:</strong> Missing alt attributes on images.</p>
-      <p><strong>The Fix:</strong> Add descriptive alt text to all meaningful images.</p>
-
-      <h3>5. Missing Viewport Tag</h3>
-      <p><strong>The Problem:</strong> No viewport meta tag for mobile optimization.</p>
-      <p><strong>The Fix:</strong> Add <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</code> to every page.</p>
-
-      <h2>Best Practices for On-Page SEO</h2>
-
-      <h3>1. Start with Keyword Research</h3>
-      <p>Identify the keywords your target audience uses to find content like yours. Use these keywords naturally throughout your content, titles, and headings.</p>
-
-      <h3>2. Write for Humans First</h3>
-      <p>While search engines matter, your content should always prioritize human readers. Write naturally, answer questions fully, and provide unique value.</p>
-
-      <h3>3. Optimize for Mobile</h3>
-      <p>With <strong>mobile-first indexing</strong>, Google primarily uses the mobile version of your site for ranking. Ensure your <strong>mobile-friendly website</strong> has all the same on-page optimization as your desktop version.</p>
-
-      <h3>4. Use Internal Linking</h3>
-      <p>Link to relevant pages within your site to distribute link equity and help users discover more content. Use descriptive anchor text.</p>
-
-      <h3>5. Monitor Performance</h3>
-      <p>Regularly audit your on-page SEO using our <strong>On-Page SEO Checker</strong>. Track changes in rankings and click-through rates to measure your optimization success.</p>
-
-      <h2>How to Use This Tool Effectively</h2>
-
-      <h3>Single Page Audits</h3>
-      <p>Enter any URL to get a comprehensive on-page SEO analysis. The tool checks title tags, meta descriptions, headings, images, canonical tags, viewport, language, Open Graph, Twitter Cards, structured data, content length, and more.</p>
-
-      <h3>Post-Launch Verification</h3>
-      <p>After publishing new pages or updating content, use our tool to verify all on-page elements are properly optimized. Combine with our <a href="https://opensourcetools.online/tools/meta-tags" target="_blank" rel="noopener noreferrer">Meta Tags Checker</a> for comprehensive verification.</p>
-
-      <h2>Monitoring On-Page SEO Over Time</h2>
-      <p>Regular monitoring with our <strong>On-Page SEO Checker</strong> helps you:</p>
+      <h3>1. Semantic Heading Hierarchy (H1–H6)</h3>
       <ul>
-        <li>Detect optimization issues introduced during updates</li>
-        <li>Identify content gaps and improvement opportunities</li>
-        <li>Ensure <strong>mobile-friendly websites</strong> maintain optimization</li>
-        <li>Track your SEO score and improvement over time</li>
-        <li>Stay ahead of Google's evolving requirements</li>
+        <li><strong>Single Primary Heading (<code>&lt;h1&gt;</code>):</strong> Every indexable page should have exactly one <code>&lt;h1&gt;</code> that clearly defines the primary topic. Multiple H1 tags fragment page focus.</li>
+        <li><strong>Logical Nesting:</strong> Major sections use <code>&lt;h2&gt;</code>, subsections use <code>&lt;h3&gt;</code>. Avoid skipping heading levels (e.g. going directly from H1 to H4 for aesthetic font styling).</li>
       </ul>
 
-      <p>Combine with our <a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Validator</a> and <a href="https://opensourcetools.online/tools/robots-txt" target="_blank" rel="noopener noreferrer">Robots.txt Tester</a> for comprehensive site optimization.</p>
-
-      <h2>Frequently Asked Questions (FAQs)</h2>
-
-      <h3>What is an On-Page SEO Checker?</h3>
-      <p>An <strong>On-Page SEO Checker</strong> is a tool that analyzes a webpage's on-page optimization elements including title tags, meta descriptions, headings, images, content, and technical SEO factors. It provides a score and actionable recommendations.</p>
-
-      <h3>What does the On-Page SEO score mean?</h3>
-      <p>The score is a weighted average of all checks performed. A score above 80 is considered Excellent, 60-79 is Good, 40-59 needs work, and below 40 is Poor. The score reflects how well your page is optimized for search engines.</p>
-
-      <h3>How do I improve my On-Page SEO score?</h3>
-      <p>Review the checks section to see specific issues and recommendations. Common improvements include: adding missing title tags or meta descriptions, optimizing heading structure, adding alt text to images, and improving content length and quality.</p>
-
-      <h3>What is the ideal title tag length?</h3>
-      <p>Aim for 50-60 characters for optimal display in search results. Longer titles get truncated in SERPs. Include your primary keyword near the beginning.</p>
-
-      <h3>What is the ideal meta description length?</h3>
-      <p>Aim for 120-160 characters for optimal display in search results. Include your primary keyword and a compelling call to action.</p>
-
-      <h3>How important is content length for SEO?</h3>
-      <p>Content length varies by query intent. For informational queries, longer, more comprehensive content often ranks better. For transactional or local queries, concise content can outperform. Focus on quality and satisfying user intent.</p>
-
-      <h2>Conclusion</h2>
-      <p>On-page SEO is the foundation of search engine visibility. Our <strong>On-Page SEO Checker</strong> provides the comprehensive analysis you need to identify issues, optimize your content, and improve your search rankings.</p>
-
-      <p>Whether you're running a <strong>mobile-friendly website</strong>, an e-commerce platform, or a content-rich blog, regular on-page optimization is essential for <strong>mobile SEO</strong> and search visibility. Use our <strong>On-Page SEO Checker</strong> as part of your routine maintenance to catch issues early and maintain strong search presence.</p>
-
-      <p>Start optimizing your on-page SEO today—use our <strong>On-Page SEO Checker</strong> to audit your site, identify issues, and ensure your pages are fully optimized for both search engines and users.</p>
-
-      <h3>Related Tools for Comprehensive Website Analysis</h3>
-      <p>For a complete website optimization strategy, use these tools alongside our <strong>On-Page SEO Checker</strong>:</p>
+      <h3>2. Image Optimization &amp; Web Accessibility</h3>
+      <pre className="code-pre">
+        <code>{`<img src="/images/diagram.webp" alt="Detailed diagram illustrating TLS 1.3 cryptographic handshake" width="800" height="450" loading="lazy" />`}</code>
+      </pre>
       <ul>
-        <li><a href="https://opensourcetools.online/tools/meta-tags" target="_blank" rel="noopener noreferrer">Meta Tags Checker</a> - Detailed meta tag analysis</li>
-        <li><a href="https://opensourcetools.online/tools/schema-checker" target="_blank" rel="noopener noreferrer">Schema Validator</a> - Implement structured data</li>
-        <li><a href="https://opensourcetools.online/tools/open-graph" target="_blank" rel="noopener noreferrer">Open Graph Checker</a> - Optimize social sharing</li>
-        <li><a href="https://opensourcetools.online/tools/word-count" target="_blank" rel="noopener noreferrer">Word Count Checker</a> - Measure content length</li>
-        <li><a href="https://opensourcetools.online/tools/keyword-density" target="_blank" rel="noopener noreferrer">Keyword Density Tool</a> - Optimize keyword usage</li>
-        <li><a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a> - Ensure mobile optimization</li>
-        <li><a href="https://opensourcetools.online/tools/canonical-url" target="_blank" rel="noopener noreferrer">Canonical URL Checker</a> - Prevent duplicate content</li>
-        <li><a href="https://opensourcetools.online/tools/page-speed" target="_blank" rel="noopener noreferrer">Page Speed Checker</a> - Measure load performance</li>
-        <li><a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Validator</a> - Ensure discoverability</li>
-        <li><a href="https://opensourcetools.online/tools/robots-txt" target="_blank" rel="noopener noreferrer">Robots.txt Tester</a> - Verify crawler directives</li>
+        <li><strong>Descriptive Alt Text:</strong> Describes visual content for screen readers (WCAG 2.1 accessibility) and search engine image indexing. Avoid stuffing raw keyword strings.</li>
+        <li><strong>Explicit Dimensions:</strong> Declaring <code>width</code> and <code>height</code> attributes reserves layout space and prevents Cumulative Layout Shift (CLS).</li>
       </ul>
 
-      <p>For further reading on on-page SEO and optimization, consult these authoritative resources:</p>
+      <h3>3. Indexation &amp; URL Directives</h3>
       <ul>
-        <li><a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide" target="_blank" rel="noopener noreferrer">Google SEO Starter Guide</a></li>
-        <li><a href="https://moz.com/learn/seo/on-page-seo" target="_blank" rel="noopener noreferrer">Moz On-Page SEO Guide</a></li>
-        <li><a href="https://www.semrush.com/blog/on-page-seo/" target="_blank" rel="noopener noreferrer">Semrush On-Page SEO Guide</a></li>
-        <li><a href="https://yoast.com/on-page-seo/" target="_blank" rel="noopener noreferrer">Yoast On-Page SEO Guide</a></li>
-        <li><a href="https://backlinko.com/on-page-seo" target="_blank" rel="noopener noreferrer">Backlinko On-Page SEO Guide</a></li>
+        <li><strong>Canonicalization:</strong> Ensure an explicit <Link href="/tools/canonical-url">Canonical URL</Link> points to the definitive page version.</li>
+        <li><strong>Robots Directives:</strong> Verify that accidental <code>noindex</code> tags are not blocking search engines from indexing the page (audit with our <Link href="/tools/noindex-checker">Noindex Checker</Link>).</li>
       </ul>
+
+      <h3>4. Internal &amp; External Link Equity</h3>
+      <p>
+        Links form the crawl topology of the web:
+      </p>
+      <ul>
+        <li><strong>Internal Links:</strong> Pass PageRank equity to related articles, creating topic clusters.</li>
+        <li><strong>External Links:</strong> Cite authoritative reference materials (e.g. W3C, IETF RFCs) to establish factual trust signals.</li>
+      </ul>
+
+      <h2>Technical Meta &amp; Social Graph Audit</h2>
+
+      <p>
+        In addition to visible content, on-page SEO requires verifying machine-readable tags:
+      </p>
+      <ul>
+        <li><strong>Title &amp; Description:</strong> Checked for pixel length and CTR appeal (see <Link href="/tools/meta-tags">Meta Tags Checker</Link>).</li>
+        <li><strong>Open Graph &amp; Twitter Cards:</strong> Validated for social sharing previews (see <Link href="/tools/open-graph">Open Graph Checker</Link>).</li>
+        <li><strong>JSON-LD Structured Data:</strong> Validated against Google Rich Result specifications (see <Link href="/tools/schema-checker">Schema Validator</Link>).</li>
+      </ul>
+
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>What is a good On-Page SEO score?</h3>
+      <p>
+        An on-page score of <strong>80 or above</strong> indicates that all fundamental HTML signals (titles, headings, alt tags, canonicals, viewport, indexability) meet search engine best practices. Scores below 60 indicate missing metadata, broken heading structures, or missing image alt attributes.
+      </p>
+
+      <h3>How often should I audit on-page SEO?</h3>
+      <p>
+        Audit key landing pages and high-traffic articles after every site redesign, CMS migration, or template update to ensure automated scripts haven't removed meta tags or altered heading hierarchies.
+      </p>
+
+      <h3>Does on-page SEO include page load speed?</h3>
+      <p>
+        Yes. Page performance directly influences user bounce rates and Core Web Vitals rankings. Measure your response latency and asset sizes using our <Link href="/tools/page-speed">Page Speed Checker</Link> and <Link href="/tools/page-size">Page Size Checker</Link>.
+      </p>
     </article>
   );
 }

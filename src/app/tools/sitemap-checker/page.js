@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 
 export default function SitemapChecker() {
@@ -301,146 +302,83 @@ function prettyType(t) {
 function Article() {
   return (
     <article className="tool-article">
-      <h2>XML Sitemaps: Your Blueprint for Getting Every Page Discovered and Indexed</h2>
-      <p>An XML sitemap is essentially a roadmap you hand to search engines, saying "here are all the important pages on my website, and here's some additional context about each one." It doesn't guarantee that every URL in your sitemap will be crawled or indexed — Google makes its own decisions about that — but it dramatically increases the likelihood that your pages will be discovered, especially on larger sites where some content might be several clicks away from the homepage and therefore harder for crawlers to find through link following alone.</p>
+      <h2>XML Sitemap Protocol & Indexation Best Practices</h2>
+      <p>
+        An XML sitemap acts as an explicit indexation roadmap for search engines. It provides search engine crawlers with a structured directory of canonical URLs, modification timestamps (<code>&lt;lastmod&gt;</code>), and optional media extensions (images, videos, or news articles).
+      </p>
 
-      <p>According to <a href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview" target="_blank" rel="noopener noreferrer">Google Search Central</a>, sitemaps help search engines understand your website structure and prioritize crawling. Our <strong>Sitemap Checker</strong> helps you validate your sitemap and identify issues that could prevent proper indexing.</p>
+      <h2>Sitemap Protocol Specifications & Limits</h2>
 
-      <h2>What This Tool Does</h2>
-      <p>Fetches the sitemap, validates the XML, counts URLs, expands sitemap indexes, supports gzip, and flags common issues (duplicates, off-domain URLs, future <code>lastmod</code> dates, invalid priority, oversize files).</p>
+      <p>
+        Standardized under the <a href="https://www.sitemaps.org/protocol.html" target="_blank" rel="noopener noreferrer">Sitemaps.org standard</a> and supported by all major search engines:
+      </p>
 
-      <p>This tool is essential for maintaining a <strong>mobile-friendly website</strong>. Combined with our <a href="https://opensourcetools.online/tools/google-index" target="_blank" rel="noopener noreferrer">Google Index Checker</a> and <a href="https://opensourcetools.online/tools/robots-txt" target="_blank" rel="noopener noreferrer">Robots.txt Tester</a>, you can ensure your site is properly configured for Google's crawlers.</p>
-
-      <h2>Why Sitemaps Matter for SEO</h2>
-
-      <h3>1. Improved Crawl Efficiency</h3>
-      <p>Sitemaps help search engines discover pages they might otherwise miss, especially on larger sites. This is particularly important for <strong>mobile SEO</strong> where mobile-first indexing requires all important pages to be discoverable.</p>
-
-      <h3>2. Priority Signals</h3>
-      <p>While Google largely ignores <code>changefreq</code> and <code>priority</code> values, the <code>lastmod</code> date is actively used to help Googlebot prioritize re-crawling updated content more efficiently.</p>
-
-      <h3>3. Image and Video Discovery</h3>
-      <p>Specialized sitemap extensions for images and videos help Google discover media content that might be loaded via JavaScript or in ways that aren't easily parseable from the HTML source.</p>
-
-      <h2>The Basic Structure of an XML Sitemap</h2>
-      <p>At its simplest, an XML sitemap is a list of URLs wrapped in XML markup. Each URL entry (called a <code>&lt;url&gt;</code> element) contains at minimum the page's location (<code>&lt;loc&gt;</code>) and optionally includes metadata like the last modification date (<code>&lt;lastmod&gt;</code>), how frequently the page changes (<code>&lt;changefreq&gt;</code>), and the page's priority relative to other pages on the site (<code>&lt;priority&gt;</code>).</p>
-      <p>However, be aware that Google has publicly stated it largely ignores <code>changefreq</code> and <code>priority</code> values in sitemaps because site owners routinely set them inaccurately (everyone marks everything as high priority). The <code>lastmod</code> date, on the other hand, is actively used by Google — if it's accurate and consistent, it helps Googlebot prioritize re-crawling updated content more efficiently.</p>
-
-      <h2>Sitemap Index Files</h2>
-      <p>A single XML sitemap file has a maximum limit of 50,000 URLs and 50 MB (uncompressed). Large websites frequently need to split their content across multiple sitemap files. A sitemap index file is a special sitemap that simply lists the locations of all your individual sitemap files. This lets you have a main entry point at <code>/sitemap.xml</code> that search engines can reference, while your actual URL lists are organized into logical sub-sitemaps — one for blog posts, one for product pages, one for category pages, and so on.</p>
-
-      <h2>Specialized Sitemaps: Images and Videos</h2>
-      <p>Beyond standard page sitemaps, Google supports specialized sitemap extensions for images and videos. An image sitemap tells Google about images embedded in your pages that it might miss during normal crawling — particularly images loaded via JavaScript or displayed in ways that aren't easily parseable from the HTML source. A video sitemap provides metadata about video content including title, description, thumbnail URL, and duration, helping Google surface your videos in video search results.</p>
-
-      <h2>Common Sitemap Issues and How to Fix Them</h2>
-
-      <h3>1. Sitemap Not Found</h3>
-      <p><strong>The Problem:</strong> The sitemap URL returns a 404 or isn't accessible.</p>
-      <p><strong>The Fix:</strong> Verify the sitemap URL is correct. Common locations are <code>/sitemap.xml</code>, <code>/sitemap_index.xml</code>, or <code>/sitemap/sitemap.xml</code>. Submit the correct URL to Google Search Console.</p>
-
-      <h3>2. Off-Domain URLs</h3>
-      <p><strong>The Problem:</strong> Sitemap contains URLs from different domains.</p>
-      <p><strong>The Fix:</strong> Sitemaps should only contain URLs from the same domain. Remove off-domain URLs or create separate sitemaps for each domain.</p>
-
-      <h3>3. Duplicate URLs</h3>
-      <p><strong>The Problem:</strong> The same URL appears multiple times in the sitemap.</p>
-      <p><strong>The Fix:</strong> Remove duplicates to avoid confusion. Most CMS platforms should handle this automatically.</p>
-
-      <h3>4. Future lastmod Dates</h3>
-      <p><strong>The Problem:</strong> <code>lastmod</code> dates in the future confuse search engines.</p>
-      <p><strong>The Fix:</strong> Ensure lastmod dates are accurate and not set to future dates.</p>
-
-      <h3>5. Invalid Priority Values</h3>
-      <p><strong>The Problem:</strong> Priority values outside the 0.0-1.0 range.</p>
-      <p><strong>The Fix:</strong> Use valid priority values between 0.0 and 1.0.</p>
-
-      <h2>Best Practices for XML Sitemaps</h2>
-
-      <h3>1. Keep Sitemaps Updated</h3>
-      <p>Automatically regenerate sitemaps when content changes. Most modern CMS platforms (WordPress, Shopify, etc.) generate sitemaps automatically and keep them updated.</p>
-
-      <h3>2. Submit to Google Search Console</h3>
-      <p>Submit your sitemap URL in Google Search Console to help Google discover and index your content faster.</p>
-
-      <h3>3. Use Sitemap Indexes for Large Sites</h3>
-      <p>For sites with more than 50,000 URLs, use sitemap index files to organize your sitemaps logically.</p>
-
-      <h3>4. Include Only Indexable URLs</h3>
-      <p>Only include URLs that return 200 OK and are meant to be indexed. Avoid including URLs with noindex tags, canonical to other pages, or 4xx/5xx status codes.</p>
-
-      <h3>5. Include Images and Videos</h3>
-      <p>Use specialized sitemap extensions for images and videos to help Google discover rich media content.</p>
-
-      <h2>Keeping Your Sitemap Accurate</h2>
-      <p>The most damaging thing you can do with a sitemap is include URLs that return errors. If your sitemap lists 500 URLs and 200 of them return 404 errors, you're explicitly pointing Google to broken pages. This wastes crawl budget and signals poor site maintenance. Most modern CMS platforms generate sitemaps automatically and keep them updated, but it's worth auditing periodically to make sure only live, indexable pages are included. Use our <strong>Sitemap Checker</strong> to quickly scan any domain's sitemap and catch issues before they affect your crawl efficiency.</p>
-
-      <h2>How to Use This Tool Effectively</h2>
-
-      <h3>Single Domain Check</h3>
-      <p>Enter any domain to automatically discover the sitemap. The tool checks common locations like <code>/sitemap.xml</code> and <code>/sitemap_index.xml</code>.</p>
-
-      <h3>Direct Sitemap URL Check</h3>
-      <p>Enter a specific sitemap URL for direct validation. This is useful for verifying individual sitemaps in a sitemap index.</p>
-
-      <h3>Post-Update Verification</h3>
-      <p>After updating your sitemap, use our tool to verify it's valid. Combine with our <a href="https://opensourcetools.online/tools/google-index" target="_blank" rel="noopener noreferrer">Google Index Checker</a> to ensure pages are being indexed.</p>
-
-      <h2>Monitoring Sitemaps Over Time</h2>
-      <p>Regular monitoring with our <strong>Sitemap Checker</strong> helps you:</p>
       <ul>
-        <li>Detect sitemap issues introduced during updates</li>
-        <li>Verify all important pages are included</li>
-        <li>Identify broken or duplicate URLs</li>
-        <li>Maintain <strong>mobile-friendly websites</strong> with proper sitemaps</li>
-        <li>Protect your crawl efficiency</li>
+        <li><strong>Single File Limit:</strong> A standard <code>&lt;urlset&gt;</code> can contain a maximum of <strong>50,000 URLs</strong> and cannot exceed <strong>50 MB</strong> uncompressed.</li>
+        <li><strong>Compression:</strong> Sitemaps can be gzip-compressed (e.g., <code>sitemap.xml.gz</code>) to save server bandwidth; search engines automatically decompress them.</li>
+        <li><strong>Character Encoding:</strong> Must use UTF-8 encoding with entity escaping (e.g., <code>&amp;amp;</code> for <code>&amp;</code>, <code>&amp;quot;</code> for <code>&quot;</code>).</li>
       </ul>
 
-      <p>Combine with our <a href="https://opensourcetools.online/tools/robots-txt" target="_blank" rel="noopener noreferrer">Robots.txt Tester</a> and <a href="https://opensourcetools.online/tools/google-index" target="_blank" rel="noopener noreferrer">Google Index Checker</a> for comprehensive crawl management.</p>
+      <h2>Sitemap Index Architecture (<code>&lt;sitemapindex&gt;</code>)</h2>
+      <p>
+        Websites containing more than 50,000 URLs, or with distinct content categories, must split records across multiple sitemap files referenced by a parent sitemap index:
+      </p>
+      <pre className="code-pre">
+        <code>{`<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://www.example.com/sitemap-posts.xml</loc>
+    <lastmod>2026-08-20T10:00:00+00:00</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.example.com/sitemap-products.xml</loc>
+    <lastmod>2026-08-25T14:30:00+00:00</lastmod>
+  </sitemap>
+</sitemapindex>`}</code>
+      </pre>
 
-      <h2>Frequently Asked Questions (FAQs)</h2>
+      <h2>The Critical Role of <code>&lt;lastmod&gt;</code></h2>
+      <p>
+        Google officially disregards <code>&lt;priority&gt;</code> and <code>&lt;changefreq&gt;</code> tags because webmasters historically inflated them. However, Google <strong>actively uses the <code>&lt;lastmod&gt;</code> timestamp</strong> to determine whether content has been modified and requires re-crawling.
+      </p>
+      <p>
+        <strong>Rule:</strong> Only update <code>&lt;lastmod&gt;</code> when meaningful content changes occur. Setting all URLs to today's date automatically will cause search engines to distrust your timestamps.
+      </p>
 
-      <h3>What is a Sitemap Checker?</h3>
-      <p>A <strong>Sitemap Checker</strong> is a tool that validates XML sitemaps, checks for errors, counts URLs, and identifies common issues like duplicates, off-domain URLs, and invalid priority values.</p>
+      <h2>Common Sitemap Errors & How to Fix Them</h2>
 
-      <h3>Why do I need a sitemap?</h3>
-      <p>Sitemaps help search engines discover your content, especially on larger sites where some pages might be several clicks away from the homepage. They also provide metadata like last modification dates.</p>
+      <h3>1. Including Non-Canonical or Redirecting URLs</h3>
+      <p>
+        A sitemap should strictly contain <strong>HTTP 200 indexable canonical URLs</strong>. Never include URLs that return:
+      </p>
+      <ul>
+        <li>301/302 redirects (verify with our <Link href="/tools/redirect-checker">Redirect Checker</Link>)</li>
+        <li>404/410 errors (verify with our <Link href="/tools/http-status">HTTP Status Checker</Link>)</li>
+        <li>URLs marked with <Link href="/tools/noindex-checker">noindex directives</Link></li>
+        <li>URLs with cross-page <Link href="/tools/canonical-url">canonical tags</Link> pointing elsewhere</li>
+      </ul>
 
-      <h3>What is the maximum size of a sitemap?</h3>
-      <p>A single XML sitemap file has a maximum limit of 50,000 URLs and 50 MB (uncompressed). For larger sites, use sitemap index files.</p>
+      <h3>2. Off-Domain URL Declarations</h3>
+      <p>
+        Sitemaps cannot contain URLs on domains or subdomains other than the one hosting the sitemap, unless cross-domain ownership is verified inside search engine webmaster tools.
+      </p>
+
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>Where should I place my sitemap?</h3>
+      <p>
+        Place your main sitemap at the domain root (e.g., <code>https://example.com/sitemap.xml</code>) and reference its absolute URL inside your <Link href="/tools/robots-txt">robots.txt</Link> file using the <code>Sitemap:</code> directive.
+      </p>
 
       <h3>How do I submit my sitemap to Google?</h3>
-      <p>Submit your sitemap URL through Google Search Console under the "Sitemaps" section. This helps Google discover and index your content faster.</p>
+      <p>
+        Log into Google Search Console, navigate to <strong>Index &gt; Sitemaps</strong>, enter your sitemap filename, and click Submit. This triggers Googlebot to queue the file for parsing.
+      </p>
 
-      <h3>What should I include in my sitemap?</h3>
-      <p>Include only canonical, indexable pages that return 200 OK. Avoid including URLs with noindex tags, canonical to other pages, or 4xx/5xx status codes.</p>
-
-      <h2>Conclusion</h2>
-      <p>XML sitemaps are essential infrastructure for ensuring search engines discover and index your content efficiently. Our <strong>Sitemap Checker</strong> provides the detailed validation you need to identify issues and maintain a healthy sitemap.</p>
-
-      <p>Whether you're running a <strong>mobile-friendly website</strong>, an e-commerce platform, or a content-rich blog, regular sitemap validation is essential for maintaining search visibility. Use our <strong>Sitemap Checker</strong> as part of your routine maintenance to catch issues early and maintain strong search presence.</p>
-
-      <p>Start validating your sitemap today—use our <strong>Sitemap Checker</strong> to audit your site, identify issues, and ensure your content is properly discoverable by search engines.</p>
-
-      <h3>Related Tools for Comprehensive Website Analysis</h3>
-      <p>For a complete website optimization strategy, use these tools alongside our <strong>Sitemap Checker</strong>:</p>
-      <ul>
-        <li><a href="https://opensourcetools.online/tools/robots-txt" target="_blank" rel="noopener noreferrer">Robots.txt Tester</a> - Verify crawler directives</li>
-        <li><a href="https://opensourcetools.online/tools/google-index" target="_blank" rel="noopener noreferrer">Google Index Checker</a> - Check indexing status</li>
-        <li><a href="https://opensourcetools.online/tools/http-status" target="_blank" rel="noopener noreferrer">HTTP Status Checker</a> - Verify server responses</li>
-        <li><a href="https://opensourcetools.online/tools/redirect-checker" target="_blank" rel="noopener noreferrer">Redirect Checker</a> - Analyze redirect chains</li>
-        <li><a href="https://opensourcetools.online/tools/canonical-url" target="_blank" rel="noopener noreferrer">Canonical URL Checker</a> - Prevent duplicate content</li>
-        <li><a href="https://opensourcetools.online/tools/on-page-seo" target="_blank" rel="noopener noreferrer">On-Page SEO Checker</a> - Optimize your content</li>
-        <li><a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a> - Ensure mobile optimization</li>
-      </ul>
-
-      <p>For further reading on sitemaps and SEO, consult these authoritative resources:</p>
-      <ul>
-        <li><a href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview" target="_blank" rel="noopener noreferrer">Google Search Central: Sitemaps</a></li>
-        <li><a href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap" target="_blank" rel="noopener noreferrer">Google Search Central: Build a Sitemap</a></li>
-        <li><a href="https://developers.google.com/search/docs/crawling-indexing/sitemaps/sitemap-index" target="_blank" rel="noopener noreferrer">Google Search Central: Sitemap Index</a></li>
-        <li><a href="https://www.semrush.com/blog/xml-sitemap/" target="_blank" rel="noopener noreferrer">Semrush XML Sitemap Guide</a></li>
-        <li><a href="https://moz.com/learn/seo/xml-sitemap" target="_blank" rel="noopener noreferrer">Moz XML Sitemap Guide</a></li>
-      </ul>
+      <h3>Does having a sitemap guarantee that all my pages will be indexed?</h3>
+      <p>
+        No. A sitemap assists in URL discovery, but search engines ultimately determine indexation based on content quality, technical accessibility, and authority. Use our <Link href="/tools/google-index">Google Index Checker</Link> to inspect specific URL indexation signals.
+      </p>
     </article>
   );
 }

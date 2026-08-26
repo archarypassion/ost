@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 
 export default function RobotsTxtChecker() {
@@ -259,140 +260,101 @@ function ResultRow({ label, children, mono = false }) {
 function formatBytes(n) {
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
 function Article() {
   return (
     <article className="tool-article">
-      <h2>Robots.txt: The Complete Guide to Controlling How Search Engines Crawl Your Site</h2>
-      <p>The robots.txt file is one of the oldest and most fundamental pieces of technical SEO infrastructure on the web. It's a plain text file sitting at the root of your domain — always accessible at <code>yourdomain.com/robots.txt</code> — and its entire purpose is to communicate with search engine crawlers about which parts of your website they're allowed to access. Despite its age and simplicity, it remains one of the most misunderstood files in web development. A misconfigured robots.txt can accidentally block your entire website from Google, and you might not notice for weeks.</p>
-      
-      <p>According to <a href="https://developers.google.com/search/docs/crawling-indexing/robots/intro" target="_blank" rel="noopener noreferrer">Google Search Central</a>, robots.txt is the first line of defense in controlling how search engines crawl your site. Our <strong>Robots.txt Checker</strong> helps you validate your robots.txt file and identify issues that could prevent proper crawling.</p>
+      <h2>Robots.txt Architecture & the Robots Exclusion Protocol (RFC 9309)</h2>
+      <p>
+        The <code>robots.txt</code> file is a plaintext file placed at the root of a domain that instructs automated web crawlers which URL paths they are permitted or forbidden to request. Formalized under <a href="https://www.rfc-editor.org/rfc/rfc9309.html" target="_blank" rel="noopener noreferrer">IETF RFC 9309</a>, it serves as the foundational gatekeeper for crawl budget management and server resource preservation.
+      </p>
 
-      <h2>What This Tool Does</h2>
-      <p>Fetches <code>/robots.txt</code> from any domain and parses every User-agent group, Allow/Disallow rule, Crawl-delay, and Sitemap declaration.</p>
-      
-      <p>This tool is essential for maintaining a <strong>mobile-friendly website</strong>. Combined with our <a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Checker</a> and <a href="https://opensourcetools.online/tools/google-index" target="_blank" rel="noopener noreferrer">Google Index Checker</a>, you can ensure your site is properly configured for Google's crawlers.</p>
+      <h2>Core Syntax & Directive Rules</h2>
 
-      <h2>How Robots.txt Works</h2>
-      <p>When a crawler like Googlebot arrives at your domain, one of the very first things it does before crawling any other page is request your robots.txt file. It reads the directives in that file and uses them to determine which URLs it's allowed to fetch. If no robots.txt exists, crawlers assume they have permission to crawl everything.</p>
-      <p>The file is organized around "User-agent" declarations, which specify which crawler a particular set of rules applies to. The wildcard <code>User-agent: *</code> applies to all crawlers. You can also write rules specific to individual bots — <code>User-agent: Googlebot</code> for Google, <code>User-agent: Bingbot</code> for Bing, and so on.</p>
+      <h3>1. User-Agent Grouping</h3>
+      <p>
+        Directives apply to specific crawler identifiers. A group begins with one or more <code>User-agent</code> lines followed by <code>Allow</code> or <code>Disallow</code> directives:
+      </p>
+      <pre className="code-pre">
+        <code>{`# Allow Googlebot full access
+User-agent: Googlebot
+Disallow: /checkout/
+Disallow: /api/
 
-      <h2>Disallow vs. Allow Directives</h2>
-      <p>The two most commonly used directives are <code>Disallow</code> and <code>Allow</code>. Disallow tells a crawler it cannot access a specific path — for example, <code>Disallow: /admin/</code> blocks all URLs starting with /admin/. Allow overrides a broader Disallow rule for a more specific path. For example, you could disallow an entire directory but allow a specific file within it.</p>
-      <p>A critical point that many developers misunderstand: <code>Disallow</code> prevents crawling — it does not prevent indexing. If a page has backlinks pointing to it from other websites, Google may still index it even if you've disallowed it in robots.txt, because it discovers the URL from those external links. To actually prevent a URL from appearing in search results, you need a noindex tag. Robots.txt controls the crawler's door; noindex controls the index itself.</p>
+# Block aggressive AI scrapers
+User-agent: GPTBot
+User-agent: CCBot
+User-agent: ClaudeBot
+Disallow: /
+
+# General fallback for all other crawlers
+User-agent: *
+Disallow: /private/
+Allow: /`}</code>
+      </pre>
+
+      <h3>2. Rule Specificity and Matching Logic</h3>
+      <p>
+        When multiple rules in the same group match a requested URL, search engines follow the <strong>longest matching path</strong> rule, not line order.
+      </p>
+      <ul>
+        <li><code>Disallow: /catalog/</code> (9 chars)</li>
+        <li><code>Allow: /catalog/public/</code> (16 chars)</li>
+      </ul>
+      <p>
+        A request for <code>/catalog/public/item.html</code> will be <strong>allowed</strong> because the <code>Allow</code> pattern is longer and more specific than the <code>Disallow</code> pattern.
+      </p>
+
+      <h3>3. Wildcards (<code>*</code> and <code>$</code>)</h3>
+      <ul>
+        <li><code>*</code> matches zero or more characters (e.g., <code>Disallow: /*.pdf$</code> blocks all URLs ending in .pdf).</li>
+        <li><code>$</code> designates the end of the URL pattern (e.g., <code>Disallow: /*?*</code> blocks any URL containing query parameters).</li>
+      </ul>
 
       <h2>The Sitemap Directive</h2>
-      <p>Many robots.txt files include a <code>Sitemap:</code> directive pointing to the location of the XML sitemap. This is a helpful signal for crawlers, letting them discover your sitemap without having to search for it. You can include multiple Sitemap directives if you have a sitemap index or separate sitemaps for different sections of your site.</p>
-      
-      <p>Use our <a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Checker</a> to validate your sitemap after ensuring it's properly referenced in robots.txt.</p>
+      <p>
+        You can declare one or more XML sitemaps anywhere in <code>robots.txt</code>. This helps search engines discover your sitemap index without manual submission:
+      </p>
+      <pre className="code-pre">
+        <code>{`Sitemap: https://www.example.com/sitemap.xml
+Sitemap: https://www.example.com/sitemap-news.xml`}</code>
+      </pre>
+      <p>
+        Verify the format and availability of your sitemaps using our <Link href="/tools/sitemap-checker">XML Sitemap Checker</Link>.
+      </p>
 
-      <h2>Crawl-Delay: Use With Caution</h2>
-      <p>The <code>Crawl-delay</code> directive tells crawlers to wait a specified number of seconds between requests. This can be useful for protecting a low-resource server from being overwhelmed by aggressive crawling. However, Google has publicly stated that it does not honor the Crawl-delay directive in robots.txt — you need to use Google Search Console to set a crawl rate limit for Googlebot specifically. Other crawlers like Bingbot do respect Crawl-delay.</p>
+      <h2>Crucial Gotchas: What Robots.txt Does NOT Do</h2>
 
-      <h2>Common Robots.txt Mistakes</h2>
-      
-      <h3>1. Site-Wide Block</h3>
-      <p><strong>The Problem:</strong> <code>Disallow: /</code> blocks all crawling for a user-agent.</p>
-      <p><strong>The Fix:</strong> Remove the Disallow rule or make it more specific. Use our <strong>Robots.txt Checker</strong> to detect site-wide blocks.</p>
-      
-      <h3>2. Trying to Hide Sensitive Content</h3>
-      <p><strong>The Problem:</strong> Using robots.txt to hide private content — robots.txt is public and can reveal the existence of paths you'd rather keep private.</p>
-      <p><strong>The Fix:</strong> Use authentication and proper server access controls for genuinely private content.</p>
-      
-      <h3>3. Disallow without Noindex</h3>
-      <p><strong>The Problem:</strong> Disallowing crawling but not adding noindex tags — pages may still appear in search results from external links.</p>
-      <p><strong>The Fix:</strong> For pages you don't want indexed, add <code>&lt;meta name="robots" content="noindex"&gt;</code> in addition to Disallow rules.</p>
-      
-      <h3>4. Missing Sitemap Declaration</h3>
-      <p><strong>The Problem:</strong> No Sitemap directive in robots.txt, making it harder for crawlers to discover your sitemap.</p>
-      <p><strong>The Fix:</strong> Add <code>Sitemap: https://yourdomain.com/sitemap.xml</code> to your robots.txt file.</p>
-
-      <h2>Best Practices for Robots.txt</h2>
-      
-      <h3>1. Start with a Clean File</h3>
-      <p>Begin with no rules (or just a sitemap declaration) and add specific Disallow rules as needed. Avoid blanket blocking unless absolutely necessary.</p>
-      
-      <h3>2. Test Your Rules</h3>
-      <p>Use our <strong>Robots.txt Checker</strong> to validate your rules after any change. Test with Google Search Console's robots.txt tester for Google-specific validation.</p>
-      
-      <h3>3. Use Specific User-Agents</h3>
-      <p>Use specific user-agent rules when possible. For example, block certain crawlers while allowing Googlebot.</p>
-      
-      <h3>4. Include Sitemap References</h3>
-      <p>Always include a <code>Sitemap:</code> directive pointing to your XML sitemap location.</p>
-      
-      <h3>5. Keep It Simple</h3>
-      <p>Complex robots.txt files are harder to maintain and more likely to contain errors. Keep rules simple and well-documented.</p>
-
-      <h2>How to Use This Tool Effectively</h2>
-      
-      <h3>Single Domain Check</h3>
-      <p>Enter any domain to fetch and parse its robots.txt file. The tool shows all user-agent groups, rules, and sitemap declarations.</p>
-      
-      <h3>Competitor Analysis</h3>
-      <p>Analyze competitor robots.txt files to understand what they're hiding from or exposing to search engine crawlers.</p>
-      
-      <h3>Post-Update Verification</h3>
-      <p>After updating your robots.txt, use our tool to verify it's properly configured. Combine with our <a href="https://opensourcetools.online/tools/google-index" target="_blank" rel="noopener noreferrer">Google Index Checker</a> to ensure pages are being indexed.</p>
-
-      <h2>Monitoring Robots.txt Over Time</h2>
-      <p>Regular monitoring with our <strong>Robots.txt Checker</strong> helps you:</p>
       <ul>
-        <li>Detect accidental site-wide blocks introduced during updates</li>
-        <li>Verify sitemap references remain correct</li>
-        <li>Identify changes in crawl behavior</li>
-        <li>Maintain <strong>mobile-friendly websites</strong> with proper crawl settings</li>
-        <li>Protect your crawl efficiency</li>
+        <li>
+          <strong>Robots.txt does not guarantee non-indexation:</strong> If external websites link to a disallowed path, Google may still index the URL without crawling the page content. To ensure complete removal from search results, use a <Link href="/tools/noindex-checker">noindex directive</Link> on an accessible page.
+        </li>
+        <li>
+          <strong>Robots.txt is public:</strong> Never use <code>Disallow</code> to conceal sensitive endpoints or hidden admin folders, as the file itself is publicly readable by anyone.
+        </li>
+        <li>
+          <strong>Crawl-delay is ignored by Googlebot:</strong> Google does not honor <code>Crawl-delay</code> in robots.txt. If your server experiences crawl overload from Google, adjust crawl rates inside Google Search Console settings.
+        </li>
       </ul>
-      
-      <p>Combine with our <a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Checker</a> and <a href="https://opensourcetools.online/tools/google-index" target="_blank" rel="noopener noreferrer">Google Index Checker</a> for comprehensive crawl management.</p>
 
-      <h2>Frequently Asked Questions (FAQs)</h2>
+      <h2>Frequently Asked Questions</h2>
 
-      <h3>What is a Robots.txt Checker?</h3>
-      <p>A <strong>Robots.txt Checker</strong> is a tool that fetches and parses a website's robots.txt file, displaying user-agent groups, Allow/Disallow rules, Crawl-delay directives, and Sitemap declarations in an easy-to-read format.</p>
+      <h3>What happens if a website has no robots.txt file?</h3>
+      <p>
+        If a server returns a 404 (Not Found) for <code>/robots.txt</code>, search engine crawlers interpret this as unrestricted crawl access and will crawl all discoverable links on the domain.
+      </p>
 
-      <h3>Why is robots.txt important for SEO?</h3>
-      <p>robots.txt controls which parts of your site search engines can crawl. Proper configuration ensures Googlebot can access important content while blocking irrelevant or sensitive pages.</p>
+      <h3>Can I block CSS and JavaScript files in robots.txt?</h3>
+      <p>
+        No. Googlebot needs access to CSS and JavaScript assets to render pages accurately for mobile indexing and visual layout verification. Blocking resources in <code>/static/</code> or <code>/assets/</code> can harm your search rankings.
+      </p>
 
-      <h3>What is the difference between Disallow and noindex?</h3>
-      <p><strong>Disallow</strong> prevents crawling (Googlebot can't access the page). <strong>Noindex</strong> prevents indexing (the page won't appear in search results). For complete removal, use both.</p>
-
-      <h3>Does Google honor all robots.txt rules?</h3>
-      <p>Google honors Disallow and Allow rules but does not honor Crawl-delay. For crawl rate control, use Google Search Console.</p>
-
-      <h3>What happens if robots.txt blocks Googlebot?</h3>
-      <p>Googlebot won't crawl blocked pages. However, if external links point to those pages, Google may still index them without crawling (using the link text and URL as signals).</p>
-
-      <h2>Conclusion</h2>
-      <p>The robots.txt file is a critical component of technical SEO infrastructure. Our <strong>Robots.txt Checker</strong> provides the detailed analysis you need to validate your configuration and avoid common mistakes.</p>
-      
-      <p>Whether you're running a <strong>mobile-friendly website</strong>, an e-commerce platform, or a content-rich blog, proper robots.txt configuration is essential for efficient crawling and indexing. Use our <strong>Robots.txt Checker</strong> as part of your routine maintenance to catch issues early and maintain strong search presence.</p>
-      
-      <p>Start checking your robots.txt today—use our <strong>Robots.txt Checker</strong> to audit your site, identify issues, and ensure your crawler directives are properly configured.</p>
-
-      <h3>Related Tools for Comprehensive Website Analysis</h3>
-      <p>For a complete website optimization strategy, use these tools alongside our <strong>Robots.txt Checker</strong>:</p>
-      <ul>
-        <li><a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Checker</a> - Validate sitemap references</li>
-        <li><a href="https://opensourcetools.online/tools/google-index" target="_blank" rel="noopener noreferrer">Google Index Checker</a> - Check indexing status</li>
-        <li><a href="https://opensourcetools.online/tools/http-status" target="_blank" rel="noopener noreferrer">HTTP Status Checker</a> - Verify server responses</li>
-        <li><a href="https://opensourcetools.online/tools/redirect-checker" target="_blank" rel="noopener noreferrer">Redirect Checker</a> - Analyze redirect chains</li>
-        <li><a href="https://opensourcetools.online/tools/canonical-url" target="_blank" rel="noopener noreferrer">Canonical URL Checker</a> - Prevent duplicate content</li>
-        <li><a href="https://opensourcetools.online/tools/on-page-seo" target="_blank" rel="noopener noreferrer">On-Page SEO Checker</a> - Optimize your content</li>
-        <li><a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a> - Ensure mobile optimization</li>
-      </ul>
-      
-      <p>For further reading on robots.txt and SEO, consult these authoritative resources:</p>
-      <ul>
-        <li><a href="https://developers.google.com/search/docs/crawling-indexing/robots/intro" target="_blank" rel="noopener noreferrer">Google Search Central: robots.txt</a></li>
-        <li><a href="https://developers.google.com/search/docs/crawling-indexing/robots/robots-txt" target="_blank" rel="noopener noreferrer">Google Search Central: robots.txt Rules</a></li>
-        <li><a href="https://developers.google.com/search/docs/crawling-indexing/robots/meta-tags" target="_blank" rel="noopener noreferrer">Google Search Central: Meta Robots Tags</a></li>
-        <li><a href="https://moz.com/learn/seo/robots-txt" target="_blank" rel="noopener noreferrer">Moz Robots.txt Guide</a></li>
-        <li><a href="https://www.semrush.com/blog/robots-txt/" target="_blank" rel="noopener noreferrer">Semrush Robots.txt Guide</a></li>
-      </ul>
+      <h3>How quickly does Google update its copy of robots.txt?</h3>
+      <p>
+        Google typically caches robots.txt files for up to 24 hours. If you update critical disallow rules, you can request an immediate re-fetch using the robots.txt Tester inside Google Search Console.
+      </p>
     </article>
   );
 }

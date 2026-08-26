@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import Link from 'next/link';
 
 const SEVERITY_ICON = { pass: '✓', warn: '!', fail: '✕', info: 'i' };
 const SEVERITY_LABEL = { pass: 'Good', warn: 'Warning', fail: 'Issue', info: 'Info' };
@@ -262,155 +263,88 @@ function TargetBlock({ target }) {
 function Article() {
   return (
     <article className="tool-article">
-      <h2>Canonical URLs: How to Solve Duplicate Content Without Losing Rankings</h2>
-      <p>The same content reachable from multiple URLs is endemic on the web. Trailing slashes, tracking parameters, HTTP vs HTTPS, www vs non-www, print and AMP variants — all create technical duplicates. The <code>&lt;link rel="canonical"&gt;</code> tag is how you tell Google which URL to treat as the master copy and consolidate ranking signals to.</p>
+      <h2>Canonical URL Architecture: Preventing Duplicate Content & Consolidating Equity</h2>
+      <p>
+        The canonical link element (<code>&lt;link rel="canonical" href="..." /&gt;</code>), standardized under <a href="https://www.rfc-editor.org/rfc/rfc6596.html" target="_blank" rel="noopener noreferrer">IETF RFC 6596</a>, informs search engines which URL represents the authoritative "master" version of duplicate or near-identical pages.
+      </p>
 
-      <p>According to <a href="https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls" target="_blank" rel="noopener noreferrer">Google Search Central</a>, proper canonicalization is essential for consolidating link signals and preventing duplicate content issues. Our <strong>Canonical URL Checker</strong> helps you identify and fix canonicalization issues before they impact your <strong>mobile SEO</strong> and <strong>Core Web Vitals</strong>.</p>
+      <h2>Why Canonicalization is Crucial for Technical SEO</h2>
 
-      <h2>What This Tool Does</h2>
-      <p>Paste any URL above. We follow redirects, parse every canonical signal on the page, and then probe the canonical target itself — fetching it, reading its own canonical, and reporting whether the chain stops cleanly. Run it on key landing pages, on URL variations (<code>example.com</code> vs <code>example.com/</code> vs <code>www.example.com</code>) and on parameterised URLs to catch silent canonicalisation bugs before they cost rankings.</p>
-
-      <p>This tool is essential for maintaining a <strong>mobile-friendly website</strong>. Combined with our <a href="https://opensourcetools.online/tools/http-status" target="_blank" rel="noopener noreferrer">HTTP Status Checker</a> and <a href="https://opensourcetools.online/tools/redirect-checker" target="_blank" rel="noopener noreferrer">Redirect Checker</a>, you can ensure your canonical URLs are properly configured for both users and search engines.</p>
-
-      <h2>Why Canonical URLs Matter for SEO</h2>
-
-      <h3>1. Consolidating Link Signals</h3>
-      <p>When duplicate content exists across multiple URLs, link equity (PageRank) gets divided. A canonical URL consolidates all signals to a single master URL, maximizing ranking potential. <a href="https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls" target="_blank" rel="noopener noreferrer">Google recommends</a> using canonical tags to indicate the preferred version.</p>
-
-      <h3>2. Preventing Duplicate Content Issues</h3>
-      <p>Search engines may penalize sites with significant duplicate content. Canonical tags help you control which version appears in search results, preventing duplicate content dilution.</p>
-
-      <h3>3. Mobile-First Indexing</h3>
-      <p>With <strong>mobile-first indexing</strong>, Google primarily crawls and indexes the mobile version. Proper canonicalization ensures the correct mobile URL receives ranking credit. Our <a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a> can help ensure your mobile pages are properly configured.</p>
-
-      <h2>Understanding Canonical URL Types</h2>
-
-      <h3>1. Self-Referencing Canonical (Best Practice)</h3>
-      <p>A self-referencing canonical — where every page declares its own URL as canonical — is best practice. It explicitly signals "this is the original version" and protects you if Google later finds the same content on a syndication partner or under a tracking parameter.</p>
-
-      <h3>2. Cross-Page Canonical</h3>
-      <p>When a page declares a different URL as its canonical, it's a cross-page canonical. This is useful for consolidating similar pages, but ensure the target page is the most authoritative version.</p>
-
-      <h3>3. No Canonical Declared</h3>
-      <p>Pages without a canonical tag leave Google to choose the canonical URL. This can lead to unexpected results. Use our <strong>Canonical URL Checker</strong> to identify pages missing canonicals.</p>
-
-      <h2>Where Canonicals Come From</h2>
-      <p>Most sites use the HTML <code>&lt;link rel="canonical"&gt;</code> tag in the <code>&lt;head&gt;</code>. But canonicals can also be sent via the HTTP <code>Link</code> response header — useful for non-HTML files like PDFs that have no <code>&lt;head&gt;</code> to inject into. We check both sources and flag conflicts when the two disagree (Google ignores the page-level canonical when this happens).</p>
-
-      <h2>Common Canonical Issues and How to Fix Them</h2>
-
-      <h3>1. Multiple Canonical Tags</h3>
-      <p><strong>The Problem:</strong> Multiple canonical tags in the same HTML — Google ignores the page-level canonical entirely.</p>
-      <p><strong>The Fix:</strong> Ensure only one canonical tag is present on each page. Use our <strong>Canonical URL Checker</strong> to identify duplicates.</p>
-
-      <h3>2. Canonical + Noindex</h3>
-      <p><strong>The Problem:</strong> Canonical and noindex on the same page — contradictory signals; Google may drop both.</p>
-      <p><strong>The Fix:</strong> Remove noindex from canonicalized pages, or remove the canonical from noindex pages.</p>
-
-      <h3>3. Canonical Points to a Redirect</h3>
-      <p><strong>The Problem:</strong> Canonical points to a URL that redirects — Google follows it, but prefers a direct canonical to the final URL.</p>
-      <p><strong>The Fix:</strong> Update the canonical to point directly to the final URL, not through a redirect.</p>
-
-      <h3>4. Canonical to 4xx/5xx Pages</h3>
-      <p><strong>The Problem:</strong> Canonical points to a page that returns an error — broken canonicalisation; ranking signals are lost.</p>
-      <p><strong>The Fix:</strong> Fix the target page or update the canonical to a working URL.</p>
-
-      <h3>5. Canonical Loops</h3>
-      <p><strong>The Problem:</strong> Page A → B → A — Google ignores both.</p>
-      <p><strong>The Fix:</strong> Break the loop by ensuring the canonical chain ends cleanly at a single URL.</p>
-
-      <h3>6. Cross-Domain Canonicals</h3>
-      <p><strong>The Problem:</strong> Canonical points to a different domain — fine for syndication, dangerous when accidental (a copy-pasted template can wipe out a whole site's rankings overnight).</p>
-      <p><strong>The Fix:</strong> Only use cross-domain canonicals when intentionally syndicating content. Otherwise, ensure canonicals point to your own domain.</p>
-
-      <h2>Best Practices for Canonical URL Implementation</h2>
-
-      <h3>1. Use Absolute URLs</h3>
-      <p>Always use absolute URLs (starting with <code>https://</code>) for canonical tags. Relative URLs can cause confusion and lead to incorrect canonicalization.</p>
-
-      <h3>2. Implement Self-Referencing Canonicals</h3>
-      <p>Every page should have a self-referencing canonical tag. This is the safest approach and prevents duplicate content issues.</p>
-
-      <h3>3. Keep Canonical Chains Clean</h3>
-      <p>Avoid redirect chains in canonical URLs. The canonical should point directly to the final, canonical URL without intermediate redirects.</p>
-
-      <h3>4. Use Consistent URL Format</h3>
-      <p>Use consistent URL format (www vs non-www, HTTP vs HTTPS) throughout your site. Our <a href="https://opensourcetools.online/tools/canonical-url" target="_blank" rel="noopener noreferrer">Canonical URL Checker</a> helps identify inconsistencies.</p>
-
-      <h3>5. Monitor Canonical Changes</h3>
-      <p>Regularly monitor canonical URLs using our <strong>Canonical URL Checker</strong>. Changes during site migrations or updates should be verified to ensure they don't break.</p>
-
-      <h2>How to Use This Tool Effectively</h2>
-
-      <h3>Single Page Checking</h3>
-      <p>Enter any URL to check its canonical configuration. The tool follows redirects, parses HTML and HTTP header canonicals, and probes the target page.</p>
-
-      <h3>Test URL Variations</h3>
-      <p>Test different URL variations (with/without trailing slash, www, tracking parameters) to ensure all versions canonicalize correctly to the preferred URL.</p>
-
-      <h3>Post-Migration Verification</h3>
-      <p>After site migrations, use our tool to verify all canonicals are correct. Combine with our <a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Validator</a> and <a href="https://opensourcetools.online/tools/redirect-checker" target="_blank" rel="noopener noreferrer">Redirect Checker</a> for comprehensive verification.</p>
-
-      <h2>Monitoring Canonical URLs Over Time</h2>
-      <p>Regular monitoring with our <strong>Canonical URL Checker</strong> helps you:</p>
+      <p>
+        The same page content is frequently accessible via multiple URL variations:
+      </p>
       <ul>
-        <li>Detect canonical changes introduced during updates</li>
-        <li>Verify cross-domain canonicals are intentional</li>
-        <li>Identify broken canonical targets</li>
-        <li>Ensure <strong>mobile-friendly websites</strong> have correct canonicals</li>
-        <li>Maintain link equity through proper canonicalization</li>
+        <li>Protocol and host variations: <code>http://example.com</code> vs <code>https://example.com</code> vs <code>https://www.example.com</code></li>
+        <li>Trailing slash variations: <code>/about</code> vs <code>/about/</code></li>
+        <li>Query and tracking parameters: <code>/product?color=blue&amp;sort=price</code> vs <code>/product</code> vs <code>/product?utm_source=newsletter</code></li>
+        <li>Pagination and filter matrices in e-commerce catalogs</li>
       </ul>
 
-      <p>Combine with our <a href="https://opensourcetools.online/tools/on-page-seo" target="_blank" rel="noopener noreferrer">On-Page SEO Checker</a> and <a href="https://opensourcetools.online/tools/meta-tags" target="_blank" rel="noopener noreferrer">Meta Tags Analyzer</a> for comprehensive site audits.</p>
+      <p>
+        Without explicit canonical tags, search engine crawlers split PageRank equity across variations and may choose an unintended URL to index.
+      </p>
 
-      <h2>Frequently Asked Questions (FAQs)</h2>
+      <h2>Implementation Methods</h2>
 
-      <h3>What is a Canonical URL Checker?</h3>
-      <p>A <strong>Canonical URL Checker</strong> is a tool that analyzes a webpage's canonical configuration. It checks HTML and HTTP header canonicals, follows redirects, and probes the canonical target to ensure proper implementation.</p>
+      <h3>1. HTML <code>&lt;head&gt;</code> Element</h3>
+      <pre className="code-pre">
+        <code>{`<!-- Place in the <head> of https://example.com/blog/article-name/ -->
+<link rel="canonical" href="https://example.com/blog/article-name" />`}</code>
+      </pre>
 
-      <h3>How does canonicalization affect SEO?</h3>
-      <p>Canonicalization consolidates link signals to a single URL, preventing duplicate content issues and maximizing ranking potential. Proper canonicalization is essential for <strong>mobile SEO</strong> and maintaining search visibility.</p>
+      <h3>2. HTTP <code>Link</code> Response Header (For PDFs & Downloads)</h3>
+      <p>
+        For non-HTML resources (such as whitepapers or PDF documents), declare the canonical version in the HTTP response headers:
+      </p>
+      <pre className="code-pre">
+        <code>{`Link: <https://example.com/whitepapers/seo-guide.html>; rel="canonical"`}</code>
+      </pre>
 
-      <h3>What is a self-referencing canonical?</h3>
-      <p>A self-referencing canonical is when a page declares its own URL as the canonical. This is considered best practice and protects against accidental duplicate content issues.</p>
+      <h2>Self-Referencing vs. Cross-Domain Canonicals</h2>
 
-      <h3>What happens if I have multiple canonical tags?</h3>
-      <p>Google ignores the page-level canonical entirely when multiple tags are present. Ensure only one canonical tag per page. Our tool detects and reports multiple canonical tags.</p>
+      <h3>Self-Referencing Canonicals (Standard Practice)</h3>
+      <p>
+        Every unique, indexable page should include a self-referencing canonical pointing to its own clean, parameterized-free URL. This ensures that if scrapers, tracking links, or session IDs append parameters, search engines recognize the clean original.
+      </p>
 
-      <h3>Should I use HTTP or HTTPS in canonicals?</h3>
-      <p>Always use HTTPS in canonical URLs where available. This ensures secure browsing and aligns with <strong>Core Web Vitals</strong> and <strong>mobile SEO</strong> best practices.</p>
+      <h3>Cross-Domain Canonicals (Content Syndication)</h3>
+      <p>
+        If you syndicate articles to Medium, Substack, or partner blogs, a cross-domain canonical pointing back to your original domain passes search ranking credit to your website and prevents the syndication partner from outranking your original article.
+      </p>
 
-      <h3>What is a canonical loop?</h3>
-      <p>A canonical loop occurs when Page A canonicals to Page B, and Page B canonicals back to Page A. Google ignores both canonicals, losing ranking signals. Our tool detects and reports canonical loops.</p>
+      <h2>Critical Implementation Traps</h2>
 
-      <h2>Conclusion</h2>
-      <p>Proper canonical URL implementation is fundamental to website health, <strong>mobile SEO</strong>, and search visibility. Our <strong>Canonical URL Checker</strong> provides the detailed analysis you need to identify issues, fix broken canonicals, and maintain a healthy, well-optimized site.</p>
-
-      <p>Whether you're running a <strong>mobile-friendly website</strong>, an e-commerce platform, or a content-rich blog, proper canonicalization is essential for <strong>Core Web Vitals</strong> and search engine visibility. Use our <strong>Canonical URL Checker</strong> as part of your routine maintenance to catch issues early and maintain a healthy site.</p>
-
-      <p>Start checking your canonical URLs today—use our <strong>Canonical URL Checker</strong> to audit your site, identify issues, and ensure your canonical URLs are properly configured for both users and search engines.</p>
-
-      <h3>Related Tools for Comprehensive Website Analysis</h3>
-      <p>For a complete website optimization strategy, use these tools alongside our <strong>Canonical URL Checker</strong>:</p>
       <ul>
-        <li><a href="https://opensourcetools.online/tools/http-status" target="_blank" rel="noopener noreferrer">HTTP Status Checker</a> - Verify server responses</li>
-        <li><a href="https://opensourcetools.online/tools/redirect-checker" target="_blank" rel="noopener noreferrer">Redirect Checker</a> - Analyze redirect chains</li>
-        <li><a href="https://opensourcetools.online/tools/meta-tags" target="_blank" rel="noopener noreferrer">Meta Tags Analyzer</a> - Optimize metadata</li>
-        <li><a href="https://opensourcetools.online/tools/sitemap-checker" target="_blank" rel="noopener noreferrer">Sitemap Validator</a> - Ensure discoverability</li>
-        <li><a href="https://opensourcetools.online/tools/robots-txt" target="_blank" rel="noopener noreferrer">Robots.txt Tester</a> - Verify crawler directives</li>
-        <li><a href="https://opensourcetools.online/tools/on-page-seo" target="_blank" rel="noopener noreferrer">On-Page SEO Checker</a> - Optimize content</li>
-        <li><a href="https://opensourcetools.online/tools/mobile-friendly" target="_blank" rel="noopener noreferrer">Mobile Friendly Test</a> - Ensure mobile optimization</li>
-        <li><a href="https://opensourcetools.online/tools/ssl-checker" target="_blank" rel="noopener noreferrer">SSL Certificate Checker</a> - Ensure secure connections</li>
+        <li>
+          <strong>Canonical + Noindex Conflict:</strong> Never put <code>rel="canonical"</code> to URL A and <code>noindex</code> on the same page. The directives contradict each other and cause search engines to ignore the canonical signal.
+        </li>
+        <li>
+          <strong>Canonical Pointing to a Redirect:</strong> The canonical target must return an immediate <code>200 OK</code>. If the target returns a 301/302, search engines must follow a chain (check with our <Link href="/tools/redirect-checker">Redirect Checker</Link>).
+        </li>
+        <li>
+          <strong>Relative vs. Absolute URLs:</strong> Always specify the complete absolute URL including <code>https://</code>. Relative paths like <code>href="/product"</code> can resolve incorrectly during site migrations or CDN proxying.
+        </li>
+        <li>
+          <strong>Multiple Canonical Tags:</strong> If HTML contains more than one canonical tag (often caused by CMS plugins conflicting with themes), Google ignores all canonical tags on the page.
+        </li>
       </ul>
 
-      <p>For further reading on canonicalization and SEO, consult these authoritative resources:</p>
-      <ul>
-        <li><a href="https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls" target="_blank" rel="noopener noreferrer">Google Search Central: Canonicalization</a></li>
-        <li><a href="https://developers.google.com/search/docs/crawling-indexing/rel-canonical" target="_blank" rel="noopener noreferrer">Google Search Central: rel=canonical</a></li>
-        <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/canonical" target="_blank" rel="noopener noreferrer">MDN rel=canonical Documentation</a></li>
-        <li><a href="https://moz.com/learn/seo/canonicalization" target="_blank" rel="noopener noreferrer">Moz Canonicalization Guide</a></li>
-        <li><a href="https://www.semrush.com/blog/canonical-tag/" target="_blank" rel="noopener noreferrer">Semrush Canonical Tag Guide</a></li>
-      </ul>
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>Is the canonical tag a directive or a hint?</h3>
+      <p>
+        Google treats <code>rel="canonical"</code> as a strong hint rather than a strict directive. If Google detects that the canonical target differs drastically in content, or if other signals (internal links, sitemaps, redirects) contradict it, Google may select a different canonical URL.
+      </p>
+
+      <h3>Should paginated pages canonicalize to page 1?</h3>
+      <p>
+        No. Paginated pages (e.g. <code>/blog?page=2</code>) should have self-referencing canonicals to their own URL, or canonicalize to a "View All" page if one exists. Canonicalizing page 2 to page 1 causes Googlebot to stop indexing content listed on subsequent pages.
+      </p>
+
+      <h3>What is the difference between a 301 redirect and a canonical tag?</h3>
+      <p>
+        A 301 redirect automatically forwards human users and search bots to a new destination URL. A canonical tag leaves the page visible to users while telling search engine crawlers to credit ranking signals to the canonical destination.
+      </p>
     </article>
   );
 }
